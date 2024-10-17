@@ -15,7 +15,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("account")
     .addColumn("id", "integer", (col) => col.primaryKey())
     .addColumn("password", "varchar")
-    .addColumn("userId", "bigint", (col) =>
+    .addColumn("userId", "integer", (col) =>
       col.references("user.id").onDelete("cascade").notNull(),
     )
     .addColumn("type", "text", (col) => col.notNull())
@@ -24,7 +24,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("refresh_token", "text")
     .addColumn("access_token", "text")
     .addColumn("id_token", "text")
-    .addColumn("expires_at", "bigint")
+    .addColumn("expires_in", "integer")
     .addColumn("scope", "text")
     .addColumn("created_at", "timestamp", (col) =>
       col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
