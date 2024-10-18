@@ -1,2 +1,5 @@
 [[commands]]
 package = "nodejs"
+
+[[commands]]
+package = "arion"
