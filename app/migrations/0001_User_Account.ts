@@ -3,7 +3,7 @@ import { Kysely, sql } from "kysely";
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("user")
-    .addColumn("id", "integer", (col) => col.primaryKey())
+    .addColumn("id", "bigserial", (col) => col.primaryKey())
     .addColumn("email", "text", (col) => col.unique())
     .addColumn("first_name", "text")
     .addColumn("last_name", "text")
@@ -13,9 +13,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 
   await db.schema
     .createTable("account")
-    .addColumn("id", "integer", (col) => col.primaryKey())
+    .addColumn("id", "bigserial", (col) => col.primaryKey())
     .addColumn("password", "varchar")
-    .addColumn("userId", "integer", (col) =>
+    .addColumn("userId", "bigint", (col) =>
       col.references("user.id").onDelete("cascade").notNull(),
     )
     .addColumn("type", "text", (col) => col.notNull())
@@ -24,10 +24,10 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("refresh_token", "text")
     .addColumn("access_token", "text")
     .addColumn("id_token", "text")
-    .addColumn("expires_in", "integer")
+    .addColumn("expires_in", "bigint")
     .addColumn("scope", "text")
     .addColumn("created_at", "timestamp", (col) =>
-      col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
+      col.defaultTo(sql`now()`).notNull(),
     )
     .execute();
 

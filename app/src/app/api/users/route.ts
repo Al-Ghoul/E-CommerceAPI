@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@/db";
 import bcrypt from "bcrypt";
-import { SqliteError } from "better-sqlite3";
+import { DatabaseError } from "pg";
 const SALT_ROUNDS = 10;
 
 export async function POST(request: Request) {
@@ -36,21 +36,19 @@ export async function POST(request: Request) {
           .returning("id")
           .executeTakeFirstOrThrow();
 
-        if (user && user.id) {
-          return await trx
-            .insertInto("account")
-            .values({
-              userId: user.id,
-              password: await bcrypt.hash(password, SALT_ROUNDS),
-              provider: "credentials",
-              type: "credentials",
-              providerAccountId: "credentials",
-            })
-            .executeTakeFirst();
-        }
+        return await trx
+          .insertInto("account")
+          .values({
+            userId: user.id,
+            password: await bcrypt.hash(password, SALT_ROUNDS),
+            provider: "credentials",
+            type: "credentials",
+            providerAccountId: "credentials",
+          })
+          .executeTakeFirst();
       });
     } catch (err) {
-      if (err instanceof SqliteError && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      if (err instanceof DatabaseError && err.code === '23505') {
         return new Response(
           JSON.stringify({
             status: "error",
