@@ -9,6 +9,12 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("last_name", "text")
     .addColumn("emailVerified", "timestamptz")
     .addColumn("image", "text")
+    .addColumn("created_at", "timestamp", (col) =>
+      col.defaultTo(sql`now()`).notNull(),
+    )
+    .addColumn("updated_at", "timestamp", (col) =>
+      col.defaultTo(sql`now()`).notNull(),
+    )
     .execute();
 
   await db.schema
@@ -27,6 +33,9 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("expires_in", "bigint")
     .addColumn("scope", "text")
     .addColumn("created_at", "timestamp", (col) =>
+      col.defaultTo(sql`now()`).notNull(),
+    )
+    .addColumn("updated_at", "timestamp", (col) =>
       col.defaultTo(sql`now()`).notNull(),
     )
     .execute();
