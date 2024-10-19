@@ -16,4 +16,7 @@ export default defineConfig({
       max: 10,
     }),
   },
+  seeds: {
+    seedFolder: "seeds",
+  },
 });
