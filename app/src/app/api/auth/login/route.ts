@@ -1,7 +1,8 @@
-import * as jose from "jose";
 import { z } from "zod";
 import { db } from "@/db";
 import bcrypt from "bcrypt";
+import { GenerateAccessToken, GenerateRefreshToken } from "@/utils";
+
 
 export async function POST(request: Request) {
   try {
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       await db
         .insertInto("token")
         .values({
-          userId: user.id,
+          user_id: user.id,
           token: refresh_token,
           type: "refresh",
           expires_in: 60 * 60 * 5,
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
       await db
         .insertInto("token")
         .values({
-          userId: user.id,
+          user_id: user.id,
           token: access_token,
           type: "access",
           expires_in: 60 * 60 * 24 * 5,
@@ -104,7 +105,6 @@ export async function POST(request: Request) {
         },
       );
     } catch (err) {
-      console.log(err);
       return new Response(
         JSON.stringify({
           status: "error",
@@ -130,27 +130,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function GenerateAccessToken(userId: BigInt) {
-  return await new jose.SignJWT()
-    .setProtectedHeader({ alg: "HS256", typ: "access" })
-    .setSubject(`E-Commerce-API|${userId.toString()}`)
-    .setIssuer(process.env.TOKEN_ISSUER!)
-    .setAudience(process.env.TOKEN_ISSUER!)
-    .setIssuedAt()
-    .setExpirationTime("5m")
-    .sign(new TextEncoder().encode(process.env.TOKEN_SECRET!));
-}
 
-async function GenerateRefreshToken(userId: BigInt) {
-  return await new jose.SignJWT({ typ: "refresh" })
-    .setProtectedHeader({ alg: "HS256", typ: "refresh" })
-    .setSubject(`E-Commerce-API|${userId.toString()}`)
-    .setIssuer(process.env.TOKEN_ISSUER!)
-    .setAudience(process.env.TOKEN_ISSUER!)
-    .setIssuedAt()
-    .setExpirationTime("5d")
-    .sign(new TextEncoder().encode(process.env.TOKEN_SECRET!));
-}
 
 const SignInInputSchema = z.object({
   email: z.string().email(),

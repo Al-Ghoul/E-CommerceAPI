@@ -39,11 +39,11 @@ export async function POST(request: Request) {
         return await trx
           .insertInto("account")
           .values({
-            userId: user.id,
+            user_id: user.id,
             password: await bcrypt.hash(password, SALT_ROUNDS),
             provider: "credentials",
             type: "credentials",
-            providerAccountId: "credentials",
+            providerAccount_id: "credentials",
           })
           .executeTakeFirst();
       });
