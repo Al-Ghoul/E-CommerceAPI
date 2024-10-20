@@ -19,7 +19,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("product")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
-    .addColumn("name", "varchar(255)", (col) => col.notNull())
+    .addColumn("name", "varchar(255)", (col) => col.notNull().unique())
     .addColumn("description", "text", (col) => col.notNull())
     .addColumn("price", "decimal(10, 2)", (col) => col.notNull())
     .addColumn("stock_quantity", "numeric", (col) => col.notNull())
