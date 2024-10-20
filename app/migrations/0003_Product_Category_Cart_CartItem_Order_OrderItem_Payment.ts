@@ -23,7 +23,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("description", "text", (col) => col.notNull())
     .addColumn("price", "decimal(10, 2)", (col) => col.notNull())
     .addColumn("stock_quantity", "numeric", (col) => col.notNull())
-    .addColumn("categoryId", "bigint", (col) =>
+    .addColumn("category_id", "bigint", (col) =>
       col.references("category.id").onDelete("cascade").notNull(),
     )
     .addColumn("created_at", "timestamp", (col) =>
@@ -43,10 +43,12 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("cart")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
-    .addColumn("userId", "bigint", (col) =>
+    .addColumn("user_id", "bigint", (col) =>
       col.references("user.id").onDelete("cascade").notNull(),
     )
     .addColumn("status", sql`cart_status`, (col) => col.notNull())
+    .addColumn("checked_out_at", "timestamp")
+    .addColumn("archived_at", "timestamp")
     .addColumn("created_at", "timestamp", (col) =>
       col.defaultTo(sql`now()`).notNull(),
     )
@@ -59,10 +61,10 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("cart_item")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
-    .addColumn("cartId", "bigint", (col) =>
+    .addColumn("cart_id", "bigint", (col) =>
       col.references("cart.id").onDelete("cascade").notNull(),
     )
-    .addColumn("productId", "bigint", (col) =>
+    .addColumn("product_id", "bigint", (col) =>
       col.references("product.id").onDelete("cascade").notNull(),
     )
     .addColumn("quantity", "numeric", (col) => col.notNull())
@@ -81,13 +83,24 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute();
 
   await db.schema
+    .createType("fulfillment_status")
+    .asEnum(["pending", "shipped", "delivered", "canceled"])
+    .execute();
+
+  await db.schema
     .createTable("order")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
-    .addColumn("userId", "bigint", (col) =>
+    .addColumn("cart_id", "bigint", (col) =>
+      col.references("cart.id").onDelete("cascade").notNull(),
+    )
+    .addColumn("user_id", "bigint", (col) =>
       col.references("user.id").onDelete("cascade").notNull(),
     )
     .addColumn("total_amount", "numeric", (col) => col.notNull())
     .addColumn("status", sql`order_status`, (col) => col.notNull())
+    .addColumn("fulfillment_status", sql`fulfillment_status`, (col) =>
+      col.notNull(),
+    )
     .addColumn("created_at", "timestamp", (col) =>
       col.defaultTo(sql`now()`).notNull(),
     )
@@ -100,10 +113,10 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("order_item")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
-    .addColumn("orderId", "bigint", (col) =>
+    .addColumn("order_id", "bigint", (col) =>
       col.references("order.id").onDelete("cascade").notNull(),
     )
-    .addColumn("productId", "bigint", (col) =>
+    .addColumn("product_id", "bigint", (col) =>
       col.references("product.id").onDelete("cascade").notNull(),
     )
     .addColumn("quantity", "numeric", (col) => col.notNull())
@@ -125,7 +138,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("payment")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
-    .addColumn("orderId", "bigint", (col) =>
+    .addColumn("order_id", "bigint", (col) =>
       col.references("order.id").onDelete("cascade").notNull(),
     )
     .addColumn("method", "varchar(255)", (col) => col.notNull())
@@ -153,4 +166,5 @@ export async function down(db: Kysely<any>): Promise<void> {
   await db.schema.dropType("order_status").execute();
   await db.schema.dropType("payment_status").execute();
   await db.schema.dropType("cart_status").execute();
+  await db.schema.dropType("fulfillment_status").execute();
 }
