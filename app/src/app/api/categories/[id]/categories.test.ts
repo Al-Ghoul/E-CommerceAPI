@@ -2,10 +2,15 @@ import { testApiHandler } from "next-test-api-route-handler";
 import * as appHandler from "./route";
 import { db } from "@/db";
 
+afterEach(async () => {
+  await db.deleteFrom("product").execute();
+  await db.deleteFrom("category").execute();
+});
+
 it("GET by id returns 200", async () => {
   const data = await db
     .insertInto("category")
-    .values({ name: "test", description: "test" })
+    .values({ name: "test get", description: "test" })
     .returningAll()
     .executeTakeFirst();
 
@@ -29,8 +34,6 @@ it("GET by id returns 200", async () => {
         status: "success",
         statusCode: 200,
       });
-
-      await db.deleteFrom("category").execute();
     },
   });
 });
@@ -38,7 +41,7 @@ it("GET by id returns 200", async () => {
 it("DELETE by id returns 200", async () => {
   const data = await db
     .insertInto("category")
-    .values({ name: "test", description: "test" })
+    .values({ name: "test delete", description: "test" })
     .returningAll()
     .executeTakeFirst();
 
@@ -69,7 +72,7 @@ it("DELETE by id returns 200", async () => {
 it("PATCH by id returns 200", async () => {
   const data = await db
     .insertInto("category")
-    .values({ name: "test", description: "test" })
+    .values({ name: "test patch", description: "test" })
     .returningAll()
     .executeTakeFirst();
 
@@ -100,8 +103,6 @@ it("PATCH by id returns 200", async () => {
         status: "success",
         statusCode: 200,
       });
-
-      await db.deleteFrom("category").execute();
     },
   });
 });
