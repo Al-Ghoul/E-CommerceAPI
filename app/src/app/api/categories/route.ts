@@ -34,6 +34,7 @@ export async function POST(req: Request) {
           name,
           description,
         })
+        .returningAll()
         .executeTakeFirst();
 
       return new Response(
@@ -147,5 +148,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
-

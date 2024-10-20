@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { CategoriesInputSchema } from "@/zodTypes";
+import "@/globals";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {
@@ -51,9 +52,10 @@ export async function DELETE(
     const result = await db
       .deleteFrom("category")
       .where("id", "=", params.id)
+      .returningAll()
       .executeTakeFirst();
 
-    if (result.numDeletedRows === BigInt(0)) {
+    if (!result) {
       return new Response(
         JSON.stringify({
           status: "error",
