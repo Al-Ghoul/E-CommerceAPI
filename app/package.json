@@ -9,7 +9,7 @@
     "lint": "next lint",
     "kysely": "kysely",
     "kysely-codegen": "kysely-codegen",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@types/pg": "^8.11.10",
