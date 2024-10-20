@@ -2,6 +2,11 @@ import { testApiHandler } from "next-test-api-route-handler";
 import * as appHandler from "./route";
 import { db } from "@/db";
 
+afterEach(async () => {
+  await db.deleteFrom("product").execute();
+  await db.deleteFrom("category").execute();
+});
+
 it("GET returns 200", async () => {
   await testApiHandler({
     appHandler,
@@ -44,8 +49,6 @@ it("POST returns 201", async () => {
         message: "Category was created successfully!",
         statusCode: 201,
       });
-
-      await db.deleteFrom("category").execute();
     },
   });
 });
