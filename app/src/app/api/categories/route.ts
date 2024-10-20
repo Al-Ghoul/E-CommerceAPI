@@ -2,7 +2,6 @@ import { CategoriesInputSchema } from "@/zodTypes";
 import { db } from "@/db";
 import { DatabaseError } from "pg";
 import { type NextRequest } from "next/server";
-
 import "@/globals";
 
 export async function POST(req: Request) {
@@ -11,13 +10,11 @@ export async function POST(req: Request) {
     const validatedInput = CategoriesInputSchema.safeParse(jsonInput);
 
     if (!validatedInput.success) {
-      const { errors } = validatedInput.error;
-
       return new Response(
         JSON.stringify({
           status: "error",
           statusCode: 400,
-          errors,
+          errors: validatedInput.error.errors,
           detail: "Please make sure all fields are filled out correctly",
         }),
         {
@@ -25,15 +22,11 @@ export async function POST(req: Request) {
         },
       );
     }
-    const { name, description } = validatedInput.data;
 
     try {
       const result = await db
         .insertInto("category")
-        .values({
-          name,
-          description,
-        })
+        .values(validatedInput.data)
         .returningAll()
         .executeTakeFirst();
 
@@ -90,15 +83,15 @@ export async function POST(req: Request) {
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
-  const limit = searchParams.get("limit") || 1;
-  const offset = searchParams.get("offset") || 0;
+  const limit = Number(searchParams.get("limit")) || 1;
+  const offset = Number(searchParams.get("offset")) || 0;
 
   try {
     const categories = await db
       .selectFrom("category")
       .orderBy("created_at", "asc")
-      .limit(Number(limit) + 1)
-      .offset(Number(offset))
+      .limit(limit + 1)
+      .offset(offset)
       .selectAll()
       .execute();
 
@@ -109,9 +102,7 @@ export async function GET(req: NextRequest) {
 
     const categoriesData = categories.slice(
       0,
-      categories.length > Number(limit) + 1
-        ? categories.length - 1
-        : Number(limit),
+      categories.length > limit + 1 ? categories.length - 1 : limit,
     );
 
     return new Response(
@@ -120,15 +111,13 @@ export async function GET(req: NextRequest) {
         status: "success",
         statusCode: 200,
         meta: {
-          has_next_page: categories.length > Number(limit),
-          has_previous_page: Number(offset) > 0,
+          has_next_page: categories.length > limit,
+          has_previous_page: offset > 0,
           total: totalCategories[0].total,
           count: categoriesData.length,
-          current_page: Number(offset) / Number(limit) + 1,
-          per_page: Number(limit),
-          last_page: Math.ceil(
-            Number(totalCategories[0].total) / Number(limit),
-          ),
+          current_page: offset / limit + 1,
+          per_page: limit,
+          last_page: Math.ceil(Number(totalCategories[0].total) / limit),
         },
       }),
       {

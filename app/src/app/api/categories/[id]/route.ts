@@ -44,6 +44,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     );
   }
 }
+
 export async function DELETE(
   _: Request,
   { params }: { params: { id: string } },
@@ -100,13 +101,11 @@ export async function PATCH(
     const validatedInput = CategoriesInputSchema.safeParse(jsonInput);
 
     if (!validatedInput.success) {
-      const { errors } = validatedInput.error;
-
       return new Response(
         JSON.stringify({
           status: "error",
           statusCode: 400,
-          errors,
+          errors: validatedInput.error.errors,
           detail: "Please make sure all fields are filled out correctly",
         }),
         {
@@ -114,12 +113,11 @@ export async function PATCH(
         },
       );
     }
-    const { name, description } = validatedInput.data;
 
     try {
       const result = await db
         .updateTable("category")
-        .set({ name, description, updated_at: new Date() })
+        .set({ ...validatedInput.data, updated_at: new Date() })
         .where("id", "=", params.id)
         .returningAll()
         .executeTakeFirst();
