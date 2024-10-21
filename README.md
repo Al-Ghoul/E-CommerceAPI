@@ -27,7 +27,13 @@ cd app && npm run dev
 | /api/categories      | Get all categories. paginated with limit & offset. | GET    |
 | /api/categories      |              Creates a new category.               | POST   |
 | /api/categories/{id} |                Updates a category.                 | PATCH  |
-| /api/categories/{id} |                  Deletes a post.                   | DELETE |
+| /api/categories/{id} |                  Deletes a category.                   | DELETE |
+| /api/products      | Get all products. paginated with limit & offset. | GET    |
+| /api/products      |              Creates a new product.               | POST   |
+| /api/products/{id} |                Updates a product.                 | PATCH  |
+| /api/products/{id} |                  Deletes a product.                   | DELETE |
+
+
 
 ## Technology stack
 
