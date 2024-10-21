@@ -6,19 +6,22 @@ The following LDM(s) represents the current state of the database.
 %%{init: {'theme':'dark'}}%%
 erDiagram
 
+
 USER ||--}o ACCOUNT : has
 USER ||--}o TOKEN : has
 USER ||--}o CART : has
 USER ||--}o ORDER : has
+
 CATEGORY ||--}o PRODUCT : has
 
-PRODUCT ||--}o CART : "included in"
-CART_ITEM ||--}o PRODUCT : has
-
+ORDER ||--|| PAYMENT : has
 ORDER ||--}o ORDER_ITEM : has
+
+PRODUCT ||--}o CART_ITEM : has
 PRODUCT ||--}o ORDER_ITEM : has
-ORDER ||--}o PAYMENT : has
-CART ||--}o ORDER : has
+
+CART ||--}o CART_ITEM : has
+CART ||--|| ORDER : has
 
 
 
