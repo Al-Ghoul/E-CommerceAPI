@@ -19,21 +19,21 @@ cd app && npm run dev
 
 ## Routes
 
-| URI                  |                    Description                     | Method |
-| :------------------- | :------------------------------------------------: | :----- |
-| /api/users           |               Registers a new user.                | POST   |
-| /api/auth/login      |                  Logs in a user.                   | POST   |
-| /api/auth/refresh    |                  Refresh a token.                  | POST   |
-| /api/categories      | Get all categories. paginated with limit & offset. | GET    |
-| /api/categories      |              Creates a new category.               | POST   |
-| /api/categories/{id} |                Updates a category.                 | PATCH  |
-| /api/categories/{id} |                  Deletes a category.                   | DELETE |
-| /api/products      | Get all products. paginated with limit & offset. | GET    |
-| /api/products      |              Creates a new product.               | POST   |
-| /api/products/{id} |                Updates a product.                 | PATCH  |
-| /api/products/{id} |                  Deletes a product.                   | DELETE |
-
-
+| URI                           |                    Description                     | Method |
+| :---------------------------- | :------------------------------------------------: | :----- |
+| /api/users                    |               Registers a new user.                | POST   |
+| /api/auth/login               |                  Logs in a user.                   | POST   |
+| /api/auth/refresh             |                  Refresh a token.                  | POST   |
+| /api/categories               | Get all categories. paginated with limit & offset. | GET    |
+| /api/categories               |              Creates a new category.               | POST   |
+| /api/categories/{id}          |               Get a single category.               | GET    |
+| /api/categories/{id}          |                Updates a category.                 | PATCH  |
+| /api/categories/{id}          |                Deletes a category.                 | DELETE |
+| /api/categories/{id}/products |  Get all products. paginated with limit & offset.  | GET |
+| /api/categories/{id}/products |               Creates a new product.               | POST   |
+| /api/products/{id}            |               Get a single product.                | GET    |
+| /api/products/{id}            |                 Updates a product.                 | PATCH  |
+| /api/products/{id}            |                 Deletes a product.                 | DELETE |
 
 ## Technology stack
 
