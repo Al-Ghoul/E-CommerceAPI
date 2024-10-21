@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { ProductsInputSchema } from "@/zodTypes";
+import { ProductsPatchInputSchema } from "@/zodTypes";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {
@@ -97,7 +97,7 @@ export async function PATCH(
 ) {
   try {
     const jsonInput = await req.json();
-    const validatedInput = ProductsInputSchema.safeParse(jsonInput);
+    const validatedInput = ProductsPatchInputSchema.safeParse(jsonInput);
 
     if (!validatedInput.success) {
       return new Response(
@@ -114,6 +114,19 @@ export async function PATCH(
     }
 
     try {
+      if (Object.keys(validatedInput.data).length === 0) {
+        return new Response(
+          JSON.stringify({
+            status: "error",
+            statusCode: 400,
+            message: "No data provided to update!",
+          }),
+          {
+            status: 400,
+          },
+        );
+      }
+
       const category = await db
         .selectFrom("category")
         .select(["id"])
@@ -133,11 +146,12 @@ export async function PATCH(
           },
         );
       }
-      
+
       const result = await db
         .updateTable("product")
         .set({ ...validatedInput.data, updated_at: new Date() })
         .where("id", "=", params.id)
+        .where("category_id", "=", category.id)
         .returningAll()
         .executeTakeFirst();
 
