@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { CategoriesInputSchema } from "@/zodTypes";
+import { CategoriesPatchInputSchema } from "@/zodTypes";
 import "@/globals";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
@@ -98,7 +98,7 @@ export async function PATCH(
 ) {
   try {
     const jsonInput = await req.json();
-    const validatedInput = CategoriesInputSchema.safeParse(jsonInput);
+    const validatedInput = CategoriesPatchInputSchema.safeParse(jsonInput);
 
     if (!validatedInput.success) {
       return new Response(
@@ -115,6 +115,19 @@ export async function PATCH(
     }
 
     try {
+      if (Object.keys(validatedInput.data).length === 0) {
+        return new Response(
+          JSON.stringify({
+            status: "error",
+            statusCode: 400,
+            message: "No data provided to update!",
+          }),
+          {
+            status: 400,
+          },
+        );
+      }
+
       const result = await db
         .updateTable("category")
         .set({ ...validatedInput.data, updated_at: new Date() })
