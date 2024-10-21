@@ -117,7 +117,7 @@ export async function PATCH(
       const category = await db
         .selectFrom("category")
         .select(["id"])
-        .where("id", "=", validatedInput.data.category_id)
+        .where("id", "=", params.id)
         .executeTakeFirst();
 
       if (!category) {

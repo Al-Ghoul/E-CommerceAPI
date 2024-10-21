@@ -124,7 +124,6 @@ it("PATCH by id returns 200", async () => {
     description: "description updated",
     price: 20,
     stock_quantity: 20,
-    category_id: parseInt(category.id),
   };
 
   await testApiHandler({

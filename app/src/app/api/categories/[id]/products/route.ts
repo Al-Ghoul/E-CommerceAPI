@@ -3,7 +3,10 @@ import { db } from "@/db";
 import { DatabaseError } from "pg";
 import { type NextRequest } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
   try {
     const jsonInput = await req.json();
     const validatedInput = ProductsInputSchema.safeParse(jsonInput);
@@ -26,7 +29,7 @@ export async function POST(req: Request) {
       const category = await db
         .selectFrom("category")
         .select(["id"])
-        .where("id", "=", validatedInput.data.category_id)
+        .where("id", "=", params.id)
         .executeTakeFirst();
 
       if (!category) {
@@ -47,6 +50,7 @@ export async function POST(req: Request) {
         .insertInto("product")
         .values({
           ...validatedInput.data,
+          category_id: category.id,
         })
         .returningAll()
         .executeTakeFirst();
@@ -90,14 +94,38 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } },
+) {
   const searchParams = req.nextUrl.searchParams;
   const limit = Number(searchParams.get("limit")) || 1;
   const offset = Number(searchParams.get("offset")) || 0;
 
   try {
+    const category = await db
+      .selectFrom("category")
+      .select(["id"])
+      .where("id", "=", params.id)
+      .executeTakeFirst();
+
+    if (!category) {
+      return new Response(
+        JSON.stringify({
+          status: "error",
+          statusCode: 404,
+          message: "Category not found.",
+          detail: "Please make sure you entered the correct category ID",
+        }),
+        {
+          status: 404,
+        },
+      );
+    }
+
     const products = await db
       .selectFrom("product")
+      .where("category_id", "=", category.id)
       .selectAll()
       .limit(limit + 1)
       .offset(offset)

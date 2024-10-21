@@ -10,5 +10,4 @@ export const ProductsInputSchema = z.object({
   description: z.string(),
   price: z.number().transform((value) => String(value)),
   stock_quantity: z.number().transform((value) => String(value)),
-  category_id: z.number().transform((value) => String(value)),
 });
