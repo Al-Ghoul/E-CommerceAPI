@@ -29,11 +29,15 @@ cd app && npm run dev
 | /api/categories/{id}          |               Get a single category.               | GET    |
 | /api/categories/{id}          |                Updates a category.                 | PATCH  |
 | /api/categories/{id}          |                Deletes a category.                 | DELETE |
-| /api/categories/{id}/products |  Get all products. paginated with limit & offset.  | GET |
+| /api/categories/{id}/products |  Get all products. paginated with limit & offset.  | GET    |
 | /api/categories/{id}/products |               Creates a new product.               | POST   |
 | /api/products/{id}            |               Get a single product.                | GET    |
 | /api/products/{id}            |                 Updates a product.                 | PATCH  |
 | /api/products/{id}            |                 Deletes a product.                 | DELETE |
+| /api/users/{id}/cart          |                   Get user cart.                   | GET    |
+| /api/users/{id}/cart          |                Create a user cart.                 | POST   |
+| /api/carts/{id}               |                   Delete a cart.                   | DELETE |
+| /api/carts/{id}               |                   Update a cart.                   | PATCH  |
 
 ## Technology stack
 
