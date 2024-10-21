@@ -1,8 +1,7 @@
 import * as jose from "jose";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export async function middleware(req: Request) {
   const accecssToken = req.headers.get("authorization")?.split(" ")[1];
 
   if (!accecssToken) {
@@ -43,5 +42,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/customers/:path*"],
+  matcher: [
+    "/api/categories/:path*",
+    "/api/products/:path*",
+    "/api/carts/:path*",
+    "/api/users/:path/cart/:path*",
+  ],
 };
