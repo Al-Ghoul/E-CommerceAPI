@@ -91,7 +91,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("order")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
     .addColumn("cart_id", "bigint", (col) =>
-      col.references("cart.id").onDelete("cascade").notNull(),
+      col.references("cart.id").onDelete("cascade").notNull().unique(),
     )
     .addColumn("user_id", "bigint", (col) =>
       col.references("user.id").onDelete("cascade").notNull(),
@@ -139,7 +139,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("payment")
     .addColumn("id", "bigserial", (col) => col.primaryKey())
     .addColumn("order_id", "bigint", (col) =>
-      col.references("order.id").onDelete("cascade").notNull(),
+      col.references("order.id").onDelete("cascade").notNull().unique(),
     )
     .addColumn("method", "varchar(255)", (col) => col.notNull())
     .addColumn("status", sql`payment_status`, (col) => col.notNull())
