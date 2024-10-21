@@ -8,8 +8,19 @@ afterEach(async () => {
 });
 
 it("GET returns 200", async () => {
+  const category = await db
+    .insertInto("category")
+    .values({ name: "test category", description: "test" })
+    .returningAll()
+    .executeTakeFirst();
+
+  if (!category) throw new Error("Category not found");
+
   await testApiHandler({
     appHandler,
+    params: {
+      id: category.id,
+    },
     test: async ({ fetch }) => {
       const response = await fetch({ method: "GET" });
       const json = await response.json();
@@ -33,23 +44,25 @@ it("GET returns 200", async () => {
 });
 
 it("POST returns 201", async () => {
+  const category = await db
+    .insertInto("category")
+    .values({ name: "test category", description: "test" })
+    .returningAll()
+    .executeTakeFirst();
+
+  if (!category) throw new Error("Category not found");
+
   await testApiHandler({
     appHandler,
+    params: {
+      id: category.id,
+    },
     test: async ({ fetch }) => {
-      const category = await db
-        .insertInto("category")
-        .values({ name: "test category", description: "test" })
-        .returningAll()
-        .executeTakeFirst();
-
-      if (!category) throw new Error("Category not found");
-
       const data = {
         name: "test",
         description: "test",
         price: 10,
         stock_quantity: 10,
-        category_id: parseInt(category.id),
       };
       const response = await fetch({
         method: "POST",
