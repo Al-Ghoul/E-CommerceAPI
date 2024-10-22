@@ -20,6 +20,12 @@ export const ProductsInputSchema = z.object({
 export const ProductsPatchInputSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
-  price: z.number().optional().transform((value) => String(value)),
-  stock_quantity: z.number().optional().transform((value) => String(value)),
+  price: z
+    .number()
+    .optional()
+    .transform((value) => String(value)),
+  stock_quantity: z
+    .number()
+    .optional()
+    .transform((value) => String(value)),
 });
