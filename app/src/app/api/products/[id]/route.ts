@@ -127,31 +127,10 @@ export async function PATCH(
         );
       }
 
-      const category = await db
-        .selectFrom("category")
-        .select(["id"])
-        .where("id", "=", params.id)
-        .executeTakeFirst();
-
-      if (!category) {
-        return new Response(
-          JSON.stringify({
-            status: "error",
-            statusCode: 404,
-            message: "Category not found.",
-            detail: "Please make sure you entered the correct category ID",
-          }),
-          {
-            status: 404,
-          },
-        );
-      }
-
       const result = await db
         .updateTable("product")
         .set({ ...validatedInput.data, updated_at: new Date() })
         .where("id", "=", params.id)
-        .where("category_id", "=", category.id)
         .returningAll()
         .executeTakeFirst();
 
