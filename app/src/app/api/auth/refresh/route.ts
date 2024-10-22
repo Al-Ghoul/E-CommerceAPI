@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         .where("token.token", "=", input.refresh_token)
         .where("token.status", "=", "valid")
         .where("token.type", "=", "refresh")
-        .set({ status: "invalid" })
+        .set({ status: "invalid", updated_at: new Date() })
         .returning("token.user_id")
         .executeTakeFirst();
 
