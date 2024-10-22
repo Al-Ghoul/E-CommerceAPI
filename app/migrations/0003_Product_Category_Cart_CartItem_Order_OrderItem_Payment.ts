@@ -97,7 +97,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       col.references("user.id").onDelete("cascade").notNull(),
     )
     .addColumn("total_amount", "numeric", (col) => col.notNull())
-    .addColumn("status", sql`order_status`, (col) => col.notNull())
+    .addColumn("status", sql`order_status`)
     .addColumn("fulfillment_status", sql`fulfillment_status`, (col) =>
       col.notNull(),
     )
