@@ -3,7 +3,6 @@ import * as appHandler from "./route";
 import { db } from "@/db";
 
 afterEach(async () => {
-  await db.deleteFrom("product").execute();
   await db.deleteFrom("category").execute();
 });
 
