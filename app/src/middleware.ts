@@ -2,9 +2,9 @@ import * as jose from "jose";
 import { NextResponse } from "next/server";
 
 export async function middleware(req: Request) {
-  const accecssToken = req.headers.get("authorization")?.split(" ")[1];
+  const accessToken = req.headers.get("authorization")?.split(" ")[1];
 
-  if (!accecssToken) {
+  if (!accessToken) {
     return new NextResponse(
       JSON.stringify({
         status: "error",
@@ -18,7 +18,7 @@ export async function middleware(req: Request) {
 
   try {
     await jose.jwtVerify(
-      accecssToken,
+      accessToken,
       new TextEncoder().encode(process.env.TOKEN_SECRET),
       {
         typ: "access",
