@@ -5,11 +5,11 @@ export async function POST(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  const accecssToken = req.headers.get("authorization")?.split(" ")[1];
+  const accessToken = req.headers.get("authorization")?.split(" ")[1];
 
   try {
     const tokenData = await jose.jwtVerify(
-      accecssToken!,
+      accessToken!,
       new TextEncoder().encode(process.env.TOKEN_SECRET),
       {
         typ: "access",
@@ -102,11 +102,11 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  const accecssToken = req.headers.get("authorization")?.split(" ")[1];
+  const accessToken = req.headers.get("authorization")?.split(" ")[1];
 
   try {
     const tokenData = await jose.jwtVerify(
-      accecssToken!,
+      accessToken!,
       new TextEncoder().encode(process.env.TOKEN_SECRET),
       {
         typ: "access",
