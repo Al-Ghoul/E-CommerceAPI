@@ -57,19 +57,6 @@ export async function PATCH(
       );
     }
 
-    if (selectedCart.user_id != user_id) {
-      return new Response(
-        JSON.stringify({
-          status: "error",
-          statusCode: 401,
-          message: "Unauthorized access.",
-        }),
-        {
-          status: 401,
-        },
-      );
-    }
-
     if (selectedCart.status === "checked_out") {
       return new Response(
         JSON.stringify({
@@ -208,18 +195,6 @@ export async function DELETE(
       );
     }
 
-    if (cartData.user_id != user_id) {
-      return new Response(
-        JSON.stringify({
-          status: "error",
-          statusCode: 401,
-          message: "Unauthorized access.",
-        }),
-        {
-          status: 401,
-        },
-      );
-    }
     const result = await db
       .deleteFrom("cart")
       .where("id", "=", params.id)
