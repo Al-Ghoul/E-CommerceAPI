@@ -317,7 +317,6 @@ export async function DELETE(
       },
     );
   } catch (error) {
-    console.log(error);
     if (error instanceof jose.errors.JOSEError) {
       return new Response(
         JSON.stringify({
