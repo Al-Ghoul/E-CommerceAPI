@@ -98,6 +98,31 @@ export async function POST(
       .returningAll()
       .executeTakeFirst();
 
+    if (!createdOrder) {
+      return new Response(
+        JSON.stringify({
+          status: "error",
+          statusCode: 500,
+          message: "Couldn't create your order, please try again later!",
+        }),
+        {
+          status: 500,
+        },
+      );
+    }
+
+    for (const item of cartItems) {
+      await db
+        .insertInto("order_item")
+        .values({
+          order_id: createdOrder.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price_at_purchase: Number(item.price),
+        })
+        .execute();
+    }
+
     return new Response(
       JSON.stringify({
         data: createdOrder,
