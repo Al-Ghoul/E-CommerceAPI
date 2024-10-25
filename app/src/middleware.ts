@@ -26,7 +26,7 @@ export async function middleware(req: Request) {
         audience: process.env.TOKEN_ISSUER,
       },
     );
-  } catch (e) {
+  } catch {
     return new NextResponse(
       JSON.stringify({
         status: "error",
