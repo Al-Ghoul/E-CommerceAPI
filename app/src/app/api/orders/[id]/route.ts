@@ -17,6 +17,7 @@ export async function GET(
       },
     );
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
 
     const order = await db
@@ -93,6 +94,7 @@ export async function DELETE(
       },
     );
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
 
     const deletedOrder = await db

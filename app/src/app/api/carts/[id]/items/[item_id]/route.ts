@@ -35,6 +35,7 @@ export async function PATCH(
       );
     }
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     const selectedCart = await db
       .selectFrom("cart")
@@ -207,6 +208,7 @@ export async function DELETE(
       },
     );
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     const selectedCart = await db
       .selectFrom("cart")

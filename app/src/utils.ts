@@ -1,5 +1,6 @@
 import * as jose from "jose";
 
+/* eslint @typescript-eslint/no-wrapper-object-types: off */
 export async function GenerateAccessToken(userId: BigInt) {
   return await new jose.SignJWT()
     .setProtectedHeader({ alg: "HS256", typ: "access" })
@@ -11,6 +12,7 @@ export async function GenerateAccessToken(userId: BigInt) {
     .sign(new TextEncoder().encode(process.env.TOKEN_SECRET!));
 }
 
+/* eslint @typescript-eslint/no-wrapper-object-types: off */
 export async function GenerateRefreshToken(userId: BigInt) {
   return await new jose.SignJWT({ typ: "refresh" })
     .setProtectedHeader({ alg: "HS256", typ: "refresh" })
