@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import QueryClientProvider from "./QueryClientProvider";
+import { cookies } from "next/headers";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -23,12 +25,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isLoggedIn = cookies().get("access_token") !== undefined;
+  
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <QueryClientProvider isLoggedIn={isLoggedIn}>
+            {children}
+        </QueryClientProvider>
       </body>
     </html>
   );
