@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import bcrypt from "bcrypt";
 import { GenerateAccessToken, GenerateRefreshToken } from "@/utils";
-
+import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   try {
@@ -92,6 +92,22 @@ export async function POST(request: Request) {
           status: "valid",
         })
         .executeTakeFirst();
+
+      cookies().set("access_token", access_token, {
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        secure: process.env.NODE_ENV === "production",
+        httpOnly: true,
+        sameSite: "strict",
+        path: "/",
+      });
+
+      cookies().set("refresh_token", refresh_token, {
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        secure: process.env.NODE_ENV === "production",
+        httpOnly: true,
+        sameSite: "strict",
+        path: "/",
+      });
 
       return new Response(
         JSON.stringify({

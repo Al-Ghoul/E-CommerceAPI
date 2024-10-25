@@ -1,8 +1,10 @@
 import * as jose from "jose";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(req: Request) {
-  const accessToken = req.headers.get("authorization")?.split(" ")[1];
+export async function middleware(req: NextRequest) {
+  const accessToken =
+    req.headers.get("authorization")?.split(" ")[1] ||
+    req.cookies.get("access_token")?.value;
 
   if (!accessToken) {
     return new NextResponse(
