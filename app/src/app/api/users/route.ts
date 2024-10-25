@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         status: 201,
       },
     );
-  } catch (err) {
+  } catch  {
     return new Response(
       JSON.stringify({
         status: "error",

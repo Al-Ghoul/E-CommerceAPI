@@ -31,7 +31,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
         statusCode: 200,
       }),
     );
-  } catch (err) {
+  } catch  {
     return new Response(
       JSON.stringify({
         status: "error",
@@ -78,7 +78,7 @@ export async function DELETE(
         statusCode: 200,
       }),
     );
-  } catch (err) {
+  } catch  {
     return new Response(
       JSON.stringify({
         status: "error",
@@ -157,7 +157,7 @@ export async function PATCH(
           statusCode: 200,
         }),
       );
-    } catch (err) {
+    } catch  {
       return new Response(
         JSON.stringify({
           status: "error",
@@ -169,7 +169,7 @@ export async function PATCH(
         },
       );
     }
-  } catch (err) {
+  } catch  {
     return new Response(
       JSON.stringify({
         status: "error",

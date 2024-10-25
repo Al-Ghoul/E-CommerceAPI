@@ -80,7 +80,7 @@ export async function POST(
         );
       }
     }
-  } catch (err) {
+  } catch {
     return new Response(
       JSON.stringify({
         status: "error",
@@ -160,7 +160,7 @@ export async function GET(
         status: 200,
       },
     );
-  } catch (err) {
+  } catch  {
     return new Response(
       JSON.stringify({
         status: "error",

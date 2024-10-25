@@ -104,7 +104,7 @@ export async function POST(request: Request) {
           status: 200,
         },
       );
-    } catch (err) {
+    } catch {
       return new Response(
         JSON.stringify({
           status: "error",
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
         },
       );
     }
-  } catch (err) {
+  } catch {
     return new Response(
       JSON.stringify({
         status: "error",
@@ -129,8 +129,6 @@ export async function POST(request: Request) {
     );
   }
 }
-
-
 
 const SignInInputSchema = z.object({
   email: z.string().email(),

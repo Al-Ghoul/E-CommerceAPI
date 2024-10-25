@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         );
       }
     }
-  } catch (err) {
+  } catch  {
     return new Response(
       JSON.stringify({
         status: "error",
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
         status: 200,
       },
     );
-  } catch (err) {
+  } catch  {
     return new Response(
       JSON.stringify({
         status: "error",
