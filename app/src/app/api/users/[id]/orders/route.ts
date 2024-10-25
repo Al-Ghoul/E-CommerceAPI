@@ -223,6 +223,6 @@ export async function GET(
   }
 }
 
-export const OrdersInputSchema = z.object({
+const OrdersInputSchema = z.object({
   cart_id: z.number().transform((value) => String(value)),
 });

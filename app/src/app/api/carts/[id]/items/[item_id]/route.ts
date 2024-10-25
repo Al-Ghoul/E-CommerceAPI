@@ -345,6 +345,6 @@ export async function DELETE(
   }
 }
 
-export const CartItemPatchInputSchema = z.object({
+const CartItemPatchInputSchema = z.object({
   quantity: z.number(),
 });
