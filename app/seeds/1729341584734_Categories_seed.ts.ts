@@ -1,22 +1,75 @@
-import type { Kysely } from 'kysely'
+import type { Kysely } from "kysely";
 
 export async function seed(db: Kysely<any>): Promise<void> {
-  await db.insertInto('category').values({ name: 'Clothing', description: 'Clothing' }).execute();
-  await db.insertInto('category').values({ name: 'Shoes', description: 'Shoes' }).execute();
-  await db.insertInto('category').values({ name: 'Accessories', description: 'Accessories' }).execute();
-  await db.insertInto('category').values({ name: 'Jewellery', description: 'Jewellery' }).execute();
-  await db.insertInto('category').values({ name: 'Watches', description: 'Watches' }).execute();
-  await db.insertInto('category').values({ name: 'Bags', description: 'Bags' }).execute();
-  await db.insertInto('category').values({ name: 'Handbags', description: 'Handbags' }).execute();
-  await db.insertInto('category').values({ name: 'Sunglasses', description: 'Sunglasses' }).execute();
-  await db.insertInto('category').values({ name: 'Sneakers', description: 'Sneakers' }).execute();
-  await db.insertInto('category').values({ name: 'Boots', description: 'Boots' }).execute();
-  await db.insertInto('category').values({ name: 'Sandals', description: 'Sandals' }).execute();
-  await db.insertInto('category').values({ name: 'Socks', description: 'Socks' }).execute();
-  await db.insertInto('category').values({ name: 'Gloves', description: 'Gloves' }).execute();
-  await db.insertInto('category').values({ name: 'Hats', description: 'Hats' }).execute();
-  await db.insertInto('category').values({ name: 'Ties', description: 'Ties' }).execute();
-  await db.insertInto('category').values({ name: 'Jackets', description: 'Jackets' }).execute();
-  await db.insertInto('category').values({ name: 'Belts', description: 'Belts' }).execute();
-  await db.insertInto('category').values({ name: 'Wallets', description: 'Wallets' }).execute();
+  await db
+    .insertInto("category")
+    .values({
+      name: "Electronics",
+      description: "Gadgets and devices for every need.",
+      icon: "laptop",
+    })
+    .execute();
+
+  await db
+    .insertInto("category")
+    .values({
+      name: "Clothing",
+      description: "Fashionable apparel for all seasons.",
+      icon: "shirt",
+    })
+    .execute();
+
+  await db
+    .insertInto("category")
+    .values({
+      name: "Home & Garden",
+      description: "Decor and tools for your living space.",
+      icon: "house-plus",
+    })
+    .execute();
+
+  await db
+    .insertInto("category")
+    .values({
+      name: "Books",
+      description: "Bestsellers and niche titles.",
+      icon: "book-open",
+    })
+    .execute();
+
+  await db
+    .insertInto("category")
+    .values({
+      name: "Sports & Outdoors",
+      description: "Gear for athletes and adventurers.",
+      icon: "volleyball",
+    })
+    .execute();
+
+  await db
+    .insertInto("category")
+    .values({
+      name: "Beauty & Personal Care",
+      description: "Cosmetics and self-care essentials.",
+      icon: "venetian-mask",
+    })
+    .execute();
+
+  await db
+    .insertInto("category")
+    .values({
+      name: "Toys & Games",
+      description: "Fun for all ages.",
+      icon: "gamepad-2",
+    })
+    .execute();
+
+  await db
+    .insertInto("category")
+    .values({
+      name: "Automotive",
+      description: "Parts and accessories for vehicles.",
+      icon: "car",
+    })
+    .execute();
 }
