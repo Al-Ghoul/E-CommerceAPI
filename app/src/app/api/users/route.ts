@@ -1,7 +1,7 @@
-import { z } from "zod";
 import { db } from "@/db";
 import bcrypt from "bcrypt";
 import { DatabaseError } from "pg";
+import { SignUpInputSchema } from "@/zodTypes";
 const SALT_ROUNDS = 10;
 
 export async function POST(request: Request) {
@@ -97,8 +97,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-const SignUpInputSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
