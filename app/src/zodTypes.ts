@@ -45,3 +45,24 @@ export const SignUpInputSchema = z.object({
     .min(8, "Password must be at least 8 characters"),
 });
 
+export const SignUpInputClientSchema = SignUpInputSchema.extend({
+  confirmPassword: z
+    .string({
+      required_error: "Confirm Password is required",
+      invalid_type_error: "Confirm Password must be a string",
+    })
+    .min(8, "Password must be at least 8 characters"),
+}).superRefine((val, ctx) => {
+  if (val.password != val.confirmPassword)
+    ctx.addIssue({
+      code: "custom",
+      message: "Passwords do NOT match.",
+      path: ["confirmPassword"],
+    });
+});
+
+export type SignUpInputClientSchemaType = z.infer<
+  typeof SignUpInputClientSchema
+>;
+
+export type SignInInputClientSchemaType = z.infer<typeof SignUpInputSchema>;
