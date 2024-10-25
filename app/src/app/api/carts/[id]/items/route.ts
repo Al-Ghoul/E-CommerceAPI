@@ -80,6 +80,7 @@ export async function POST(
       .where("id", "=", validatedInput.data.product_id)
       .execute();
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     const selectedCart = await db
       .selectFrom("cart")
@@ -164,6 +165,7 @@ export async function GET(
       },
     );
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     const selectedCart = await db
       .selectFrom("cart")

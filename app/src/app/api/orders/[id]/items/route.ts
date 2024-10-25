@@ -17,6 +17,7 @@ export async function GET(
       },
     );
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     const selectedOrder = await db
       .selectFrom("order")

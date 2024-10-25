@@ -18,6 +18,7 @@ export async function POST(
       },
     );
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     if (params.id != user_id) {
       return new Response(
@@ -115,6 +116,7 @@ export async function GET(
       },
     );
 
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     if (params.id != user_id) {
       return new Response(
