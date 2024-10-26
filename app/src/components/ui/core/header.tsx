@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { AuthContext } from "@/lib/contexts";
 import { deleteAuthCookieAction } from "@/lib/serverActions";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function Header({ onSignUpClick }: { onSignUpClick: () => void }) {
   const auth = useContext(AuthContext);
@@ -25,25 +26,25 @@ export function Header({ onSignUpClick }: { onSignUpClick: () => void }) {
         duration: 0.7,
       }}
     >
-      <a className="flex items-center justify-center" href="#">
+      <Link className="flex items-center justify-center" href="/">
         <ShoppingCart className="h-6 w-6" />
         <span className="sr-only">E-Commerce Store</span>
-      </a>
+      </Link>
       <nav className="ml-auto flex gap-4 sm:gap-6">
-        <a
+        <Link
           className="text-sm font-medium hover:underline underline-offset-4"
           href="#"
         >
           Products
-        </a>
-        <a
+        </Link>
+        <Link
           className="text-sm font-medium hover:underline underline-offset-4"
-          href="#"
+          href="/categories"
         >
           Categories
-        </a>
+        </Link>
         {auth?.isAuthenticated ? (
-          <a
+          <Link
             className="text-sm font-medium hover:underline underline-offset-4"
             href="#"
             onClick={() => {
@@ -52,15 +53,15 @@ export function Header({ onSignUpClick }: { onSignUpClick: () => void }) {
             }}
           >
             Signout
-          </a>
+          </Link>
         ) : (
-          <a
+          <Link
             className="text-sm font-medium hover:underline underline-offset-4"
             href="#"
             onClick={onSignUpClick}
           >
             Sign Up
-          </a>
+          </Link>
         )}
       </nav>
     </motion.header>
