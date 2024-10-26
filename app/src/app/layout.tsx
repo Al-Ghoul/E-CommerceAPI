@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import QueryClientProvider from "./QueryClientProvider";
 import { cookies } from "next/headers";
+import { Toaster } from "react-hot-toast";
+import { Footer } from "@/components/ui/core/footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,15 +28,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const isLoggedIn = cookies().get("access_token") !== undefined;
-  
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryClientProvider isLoggedIn={isLoggedIn}>
+        <main className="flex-1">
+          <QueryClientProvider isLoggedIn={isLoggedIn}>
             {children}
-        </QueryClientProvider>
+          </QueryClientProvider>
+        </main>
+        <Footer />
+        <Toaster />
       </body>
     </html>
   );
