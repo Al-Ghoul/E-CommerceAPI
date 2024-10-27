@@ -47,8 +47,8 @@ export function Header({ onSignUpClick }: { onSignUpClick: () => void }) {
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
             href="#"
-            onClick={() => {
-              deleteAuthCookieAction();
+            onClick={async () => {
+              await deleteAuthCookieAction();
               router.refresh();
             }}
           >
