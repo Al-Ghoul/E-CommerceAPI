@@ -12,7 +12,8 @@ USER ||--}o TOKEN : has
 USER ||--}o CART : has
 USER ||--}o ORDER : has
 
-CATEGORY ||--}o PRODUCT : has
+CATEGORY ||--o{ SUBCATEGORY : "has"
+SUBCATEGORY ||--o{ PRODUCT : "has"
 
 ORDER ||--|| PAYMENT : has
 ORDER ||--}o ORDER_ITEM : has
@@ -73,13 +74,23 @@ CATEGORY {
    DATETIME updated_at
 }
 
+SUBCATEGORY {
+    INTEGER id PK
+    VARCHAR name
+    TEXT description
+    INTEGER category_id FK
+    DATETIME created_at
+    DATETIME updated_at
+}
+
+
 PRODUCT {
    INTEGER id PK
    VARCHAR(255) name
    TEXT description
    DECIMAL price
    INTEGER stock_quantity
-   INTEGER category_id FK
+   INTEGER subcategory_id FK
    DATETIME created_at
    DATETIME updated_at
 }

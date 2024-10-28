@@ -16,6 +16,23 @@ export async function up(db: Kysely<any>): Promise<void> {
     )
     .execute();
 
+  // Sub Categories
+  await db.schema
+    .createTable("subcategory")
+    .addColumn("id", "bigserial", (col) => col.primaryKey())
+    .addColumn("name", "varchar(255)", (col) => col.notNull().unique())
+    .addColumn("description", "text", (col) => col.notNull())
+    .addColumn("category_id", "bigint", (col) =>
+      col.references("category.id").onDelete("cascade").notNull(),
+    )
+    .addColumn("created_at", "timestamp", (col) =>
+      col.defaultTo(sql`now()`).notNull(),
+    )
+    .addColumn("updated_at", "timestamp", (col) =>
+      col.defaultTo(sql`now()`).notNull(),
+    )
+    .execute();
+
   // Products
   await db.schema
     .createTable("product")
@@ -24,8 +41,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("description", "text", (col) => col.notNull())
     .addColumn("price", "decimal(10, 2)", (col) => col.notNull())
     .addColumn("stock_quantity", "numeric", (col) => col.notNull())
-    .addColumn("category_id", "bigint", (col) =>
-      col.references("category.id").onDelete("cascade").notNull(),
+    .addColumn("subcategory_id", "bigint", (col) =>
+      col.references("subcategory.id").onDelete("cascade").notNull(),
     )
     .addColumn("created_at", "timestamp", (col) =>
       col.defaultTo(sql`now()`).notNull(),
@@ -162,6 +179,7 @@ export async function down(db: Kysely<any>): Promise<void> {
   await db.schema.dropTable("cart_item").execute();
   await db.schema.dropTable("cart").execute();
   await db.schema.dropTable("product").execute();
+  await db.schema.dropTable("subcategory").execute();
   await db.schema.dropTable("category").execute();
 
   await db.schema.dropType("order_status").execute();
