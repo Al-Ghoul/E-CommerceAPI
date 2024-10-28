@@ -8,11 +8,14 @@ export async function GET(
   const searchParams = req.nextUrl.searchParams;
   const limit = Number(searchParams.get("limit")) || 1;
   const offset = Number(searchParams.get("offset")) || 0;
+  const subcategory_id = Number(searchParams.get("subcategory")) || -1;
+  const sortBy = searchParams.get("sortBy") || "name";
+  const orderBy = searchParams.get("orderBy") || "asc";
 
   try {
     const category = await db
       .selectFrom("category")
-      .select(["id"])
+      .select(["id", "name", "description"])
       .where("id", "=", params.id)
       .executeTakeFirst();
 
@@ -30,23 +33,53 @@ export async function GET(
       );
     }
 
-    const products = await db
-      .selectFrom("product")
-      .innerJoin("subcategory", "subcategory.id", "product.subcategory_id")
-      .innerJoin("category", "category.id", "subcategory.category_id")
-      .select([
-        "product.id",
-        "product.name as product_name",
-        "product.description as product_description",
-        "product.price",
-        "product.stock_quantity",
-        "subcategory.name as subcategory_name",
-        "category.name as category_name",
-      ])
-      .where("category.id", "=", category.id)
-      .limit(limit + 1)
-      .offset(offset)
+    const subCategories = await db
+      .selectFrom("subcategory")
+      .select(["id", "name"])
+      .where("category_id", "=", category.id)
       .execute();
+
+    let query;
+    if (subcategory_id > 0) {
+      query = db
+        .selectFrom("product")
+        .innerJoin("subcategory", "subcategory.id", "product.subcategory_id")
+        .innerJoin("category", "category.id", "subcategory.category_id")
+        .select([
+          "product.id",
+          "product.name as name",
+          "product.description as description",
+          "product.price",
+          "product.stock_quantity",
+          "subcategory.name as subcategory_name",
+          "category.name as category_name",
+        ])
+        .where("subcategory_id", "=", subcategory_id.toString())
+        // @ts-expect-error: I can not find a specific type for this
+        .orderBy(sortBy, orderBy)
+        .limit(limit + 1)
+        .offset(offset);
+    } else {
+      query = db
+        .selectFrom("product")
+        .innerJoin("subcategory", "subcategory.id", "product.subcategory_id")
+        .innerJoin("category", "category.id", "subcategory.category_id")
+        .select([
+          "product.id",
+          "product.name as name",
+          "product.description as description",
+          "product.price",
+          "product.stock_quantity",
+          "subcategory.name as subcategory_name",
+          "category.name as category_name",
+        ])
+        .where("category.id", "=", category.id)
+        // @ts-expect-error: I can not find a specific type for this
+        .orderBy(sortBy, orderBy)
+        .limit(limit + 1)
+        .offset(offset);
+    }
+    const products = await query.execute();
 
     const totalProducts = await db
       .selectFrom("product")
@@ -64,6 +97,9 @@ export async function GET(
         status: "success",
         statusCode: 200,
         meta: {
+          subCategories: subCategories,
+          category_name: category.name,
+          category_description: category.description,
           has_next_page: products.length > limit,
           has_previous_page: offset > 0,
           total: totalProducts[0].total,
@@ -77,8 +113,7 @@ export async function GET(
         status: 200,
       },
     );
-  } catch (err) {
-    console.log(err);
+  } catch {
     return new Response(
       JSON.stringify({
         status: "error",
