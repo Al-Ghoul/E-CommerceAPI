@@ -11,6 +11,11 @@ export const CategoriesPatchInputSchema = z.object({
   description: z.string().optional(),
 });
 
+export const SubCategoriesInputSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+});
+
 export const ProductsInputSchema = z.object({
   name: z.string(),
   description: z.string(),
