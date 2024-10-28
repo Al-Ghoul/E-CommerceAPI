@@ -2,6 +2,7 @@ import { ProductsInputSchema } from "@/zodTypes";
 import { db } from "@/db";
 import { DatabaseError } from "pg";
 import { type NextRequest } from "next/server";
+import * as jose from "jose";
 
 export async function POST(
   req: Request,
@@ -10,6 +11,17 @@ export async function POST(
   try {
     const jsonInput = await req.json();
     const validatedInput = ProductsInputSchema.safeParse(jsonInput);
+    const accessToken = req.headers.get("authorization")?.split(" ")[1];
+
+    await jose.jwtVerify(
+      accessToken!,
+      new TextEncoder().encode(process.env.TOKEN_SECRET),
+      {
+        typ: "access",
+        issuer: process.env.TOKEN_ISSUER,
+        audience: process.env.TOKEN_ISSUER,
+      },
+    );
 
     if (!validatedInput.success) {
       return new Response(
@@ -80,7 +92,19 @@ export async function POST(
         );
       }
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof jose.errors.JOSEError) {
+      return new Response(
+        JSON.stringify({
+          status: "error",
+          statusCode: 401,
+          message: "Invalid or expired access token",
+          detail: "Please re-login",
+        }),
+        { status: 401 },
+      );
+    }
+
     return new Response(
       JSON.stringify({
         status: "error",
