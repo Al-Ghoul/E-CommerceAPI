@@ -2,12 +2,24 @@ import { CategoriesInputSchema } from "@/zodTypes";
 import { db } from "@/db";
 import { DatabaseError } from "pg";
 import { type NextRequest } from "next/server";
+import * as jose from "jose";
 import "@/globals";
 
 export async function POST(req: Request) {
   try {
+    const accessToken = req.headers.get("authorization")?.split(" ")[1];
     const jsonInput = await req.json();
     const validatedInput = CategoriesInputSchema.safeParse(jsonInput);
+
+    await jose.jwtVerify(
+      accessToken!,
+      new TextEncoder().encode(process.env.TOKEN_SECRET),
+      {
+        typ: "access",
+        issuer: process.env.TOKEN_ISSUER,
+        audience: process.env.TOKEN_ISSUER,
+      },
+    );
 
     if (!validatedInput.success) {
       return new Response(
@@ -42,7 +54,17 @@ export async function POST(req: Request) {
         },
       );
     } catch (err) {
-      if (err instanceof DatabaseError && err.code === "23505") {
+      if (err instanceof jose.errors.JOSEError) {
+        return new Response(
+          JSON.stringify({
+            status: "error",
+            statusCode: 401,
+            message: "Invalid or expired access token",
+            detail: "Please re-login",
+          }),
+          { status: 401 },
+        );
+      } else if (err instanceof DatabaseError && err.code === "23505") {
         return new Response(
           JSON.stringify({
             status: "error",
@@ -67,7 +89,7 @@ export async function POST(req: Request) {
         );
       }
     }
-  } catch  {
+  } catch {
     return new Response(
       JSON.stringify({
         status: "error",
@@ -124,7 +146,7 @@ export async function GET(req: NextRequest) {
         status: 200,
       },
     );
-  } catch  {
+  } catch {
     return new Response(
       JSON.stringify({
         status: "error",

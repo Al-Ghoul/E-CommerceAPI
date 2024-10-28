@@ -10,7 +10,7 @@ afterEach(async () => {
 it("GET by id returns 200", async () => {
   const data = await db
     .insertInto("category")
-    .values({ name: "test get", description: "test" })
+    .values({ name: "test get", description: "test", icon: "test" })
     .returningAll()
     .executeTakeFirst();
 
@@ -41,7 +41,7 @@ it("GET by id returns 200", async () => {
 it("DELETE by id returns 200", async () => {
   const data = await db
     .insertInto("category")
-    .values({ name: "test delete", description: "test" })
+    .values({ name: "test delete", description: "test", icon: "test" })
     .returningAll()
     .executeTakeFirst();
 
@@ -72,7 +72,7 @@ it("DELETE by id returns 200", async () => {
 it("PATCH by id returns 200", async () => {
   const data = await db
     .insertInto("category")
-    .values({ name: "test patch", description: "test" })
+    .values({ name: "test patch", description: "test", icon: "test" })
     .returningAll()
     .executeTakeFirst();
 

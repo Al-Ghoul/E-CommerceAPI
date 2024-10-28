@@ -27,11 +27,23 @@ it("GET returns 200", async () => {
 
   const createdCategory = await db
     .insertInto("category")
-    .values({ name: "Clothing", description: "Clothing" })
+    .values({ name: "Clothing", description: "Clothing", icon: "clothing" })
     .returning("id")
     .executeTakeFirst();
 
   if (!createdCategory) throw new Error("Category not created");
+
+  const createdSubCategory = await db
+    .insertInto("subcategory")
+    .values({
+      name: "T-Shirt",
+      description: "T-Shirt",
+      category_id: createdCategory.id,
+    })
+    .returning("id")
+    .executeTakeFirst();
+
+  if (!createdSubCategory) throw new Error("SubCategory not created");
 
   const createdProduct = await db
     .insertInto("product")
@@ -40,7 +52,7 @@ it("GET returns 200", async () => {
       description: "T-Shirt",
       price: 19.99,
       stock_quantity: 100,
-      category_id: createdCategory.id,
+      subcategory_id: createdSubCategory.id,
     })
     .returning(["id", "price"])
     .executeTakeFirst();
@@ -79,7 +91,6 @@ it("GET returns 200", async () => {
       id: createdOrder.id,
     },
     test: async ({ fetch }) => {
-     
       const response = await fetch({
         method: "GET",
         headers: {
@@ -106,8 +117,6 @@ it("GET returns 200", async () => {
   });
 });
 
-
-
 it("DELETE returns 200", async () => {
   const { user, access_token } = await CreateUserAndGetToken();
   const createdCart = await db
@@ -123,11 +132,23 @@ it("DELETE returns 200", async () => {
 
   const createdCategory = await db
     .insertInto("category")
-    .values({ name: "Clothing", description: "Clothing" })
+    .values({ name: "Clothing", description: "Clothing", icon: "clothing" })
     .returning("id")
     .executeTakeFirst();
 
   if (!createdCategory) throw new Error("Category not created");
+
+  const createdSubCategory = await db
+    .insertInto("subcategory")
+    .values({
+      name: "T-Shirt",
+      description: "T-Shirt",
+      category_id: createdCategory.id,
+    })
+    .returning("id")
+    .executeTakeFirst();
+
+  if (!createdSubCategory) throw new Error("SubCategory not created");
 
   const createdProduct = await db
     .insertInto("product")
@@ -136,7 +157,7 @@ it("DELETE returns 200", async () => {
       description: "T-Shirt",
       price: 19.99,
       stock_quantity: 100,
-      category_id: createdCategory.id,
+      subcategory_id: createdSubCategory.id,
     })
     .returning(["id", "price"])
     .executeTakeFirst();
@@ -175,7 +196,6 @@ it("DELETE returns 200", async () => {
       id: createdOrder.id,
     },
     test: async ({ fetch }) => {
-     
       const response = await fetch({
         method: "DELETE",
         headers: {

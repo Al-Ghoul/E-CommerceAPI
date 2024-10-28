@@ -25,11 +25,23 @@ it("PATCH returns 200", async () => {
 
   const createdCategory = await db
     .insertInto("category")
-    .values({ name: "Clothing", description: "Clothing" })
+    .values({ name: "Clothing", description: "Clothing", icon: "clothing" })
     .returning("id")
     .executeTakeFirst();
 
   if (!createdCategory) throw new Error("Category not created");
+
+  const createdSubCategory = await db
+    .insertInto("subcategory")
+    .values({
+      name: "T-Shirts",
+      description: "T-Shirts",
+      category_id: createdCategory.id,
+    })
+    .returning("id")
+    .executeTakeFirst();
+
+  if (!createdSubCategory) throw new Error("SubCategory not created");
 
   const createdProduct = await db
     .insertInto("product")
@@ -38,7 +50,7 @@ it("PATCH returns 200", async () => {
       description: "T-Shirt",
       price: 19.99,
       stock_quantity: 100,
-      category_id: createdCategory.id,
+      subcategory_id: createdSubCategory.id,
     })
     .returning("id")
     .executeTakeFirst();
@@ -114,11 +126,23 @@ it("DELETE returns 200", async () => {
 
   const createdCategory = await db
     .insertInto("category")
-    .values({ name: "Clothing", description: "Clothing" })
+    .values({ name: "Clothing", description: "Clothing", icon: "clothing" })
     .returning("id")
     .executeTakeFirst();
 
   if (!createdCategory) throw new Error("Category not created");
+
+  const createdSubCategory = await db
+    .insertInto("subcategory")
+    .values({
+      name: "T-Shirts",
+      description: "T-Shirts",
+      category_id: createdCategory.id,
+    })
+    .returning("id")
+    .executeTakeFirst();
+
+  if (!createdSubCategory) throw new Error("SubCategory not created");
 
   const createdProduct = await db
     .insertInto("product")
@@ -127,7 +151,7 @@ it("DELETE returns 200", async () => {
       description: "T-Shirt",
       price: 19.99,
       stock_quantity: 100,
-      category_id: createdCategory.id,
+      subcategory_id: createdSubCategory.id,
     })
     .returning("id")
     .executeTakeFirst();
