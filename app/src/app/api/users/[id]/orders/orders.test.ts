@@ -74,7 +74,7 @@ it("POST returns 201", async () => {
   await testApiHandler({
     appHandler,
     params: {
-      id: createdCart.id,
+      id: user.id,
     },
     test: async ({ fetch }) => {
       const data = {
@@ -181,7 +181,7 @@ it("GET returns 200", async () => {
   await testApiHandler({
     appHandler,
     params: {
-      id: createdCart.id,
+      id: user.id,
     },
     test: async ({ fetch }) => {
       const response = await fetch({
