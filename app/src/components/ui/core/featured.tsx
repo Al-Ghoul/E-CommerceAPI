@@ -16,7 +16,7 @@ export function Featured() {
               className="group relative overflow-hidden rounded-lg shadow-lg"
             >
               <Image
-                src={`/placeholder.svg?height=350&width=350`}
+                src={`/placeholder.svg`}
                 alt="Product Image"
                 className="object-cover w-full h-60"
                 width={350}
