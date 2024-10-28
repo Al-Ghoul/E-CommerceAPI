@@ -1,8 +1,11 @@
 import { testApiHandler } from "next-test-api-route-handler";
 import * as appHandler from "./route";
 import { db } from "@/db";
+import { CreateUserAndGetToken } from "@/testUtils";
 
 afterEach(async () => {
+  await db.deleteFrom("user").execute();
+  await db.deleteFrom("account").execute();
   await db.deleteFrom("category").execute();
 });
 
@@ -32,13 +35,18 @@ it("GET returns 200", async () => {
 });
 
 it("POST returns 201", async () => {
+  const { access_token } = await CreateUserAndGetToken();
+
   await testApiHandler({
     appHandler,
     test: async ({ fetch }) => {
-      const data = { name: "test", description: "test" };
+      const data = { name: "test", description: "test", icon: "test" };
       const response = await fetch({
         method: "POST",
         body: JSON.stringify(data),
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
       });
       const json = await response.json();
       expect(response.status).toBe(201);

@@ -8,13 +8,25 @@ afterEach(async () => {
 });
 
 it("GET by id returns 200", async () => {
-  const category = await db
+  const createdCategory = await db
     .insertInto("category")
-    .values({ name: "test get", description: "test" })
+    .values({ name: "test get", description: "test", icon: "test" })
     .returningAll()
     .executeTakeFirst();
 
-  if (!category) throw new Error("No category found");
+  if (!createdCategory) throw new Error("No category found");
+
+  const createdSubCategory = await db
+    .insertInto("subcategory")
+    .values({
+      name: "T-Shirts",
+      description: "T-Shirts",
+      category_id: createdCategory.id,
+    })
+    .returning("id")
+    .executeTakeFirst();
+
+  if (!createdSubCategory) throw new Error("SubCategory not created");
 
   const product = await db
     .insertInto("product")
@@ -23,7 +35,7 @@ it("GET by id returns 200", async () => {
       description: "test",
       price: 10,
       stock_quantity: 10,
-      category_id: category.id,
+      subcategory_id: createdSubCategory.id,
     })
     .returningAll()
     .executeTakeFirst();
@@ -53,13 +65,25 @@ it("GET by id returns 200", async () => {
 });
 
 it("DELETE by id returns 200", async () => {
-  const category = await db
+  const createdCategory = await db
     .insertInto("category")
-    .values({ name: "test get", description: "test" })
+    .values({ name: "test get", description: "test", icon: "test" })
     .returningAll()
     .executeTakeFirst();
 
-  if (!category) throw new Error("No category found");
+  if (!createdCategory) throw new Error("No category found");
+
+  const createdSubCategory = await db
+    .insertInto("subcategory")
+    .values({
+      name: "T-Shirts",
+      description: "T-Shirts",
+      category_id: createdCategory.id,
+    })
+    .returning("id")
+    .executeTakeFirst();
+
+  if (!createdSubCategory) throw new Error("SubCategory not created");
 
   const product = await db
     .insertInto("product")
@@ -68,7 +92,7 @@ it("DELETE by id returns 200", async () => {
       description: "test",
       price: 10,
       stock_quantity: 10,
-      category_id: category.id,
+      subcategory_id: createdSubCategory.id,
     })
     .returningAll()
     .executeTakeFirst();
@@ -98,13 +122,25 @@ it("DELETE by id returns 200", async () => {
 });
 
 it("PATCH by id returns 200", async () => {
-  const category = await db
+  const createdCategory = await db
     .insertInto("category")
-    .values({ name: "test get", description: "test" })
+    .values({ name: "test get", description: "test", icon: "test" })
     .returningAll()
     .executeTakeFirst();
 
-  if (!category) throw new Error("No category found");
+  if (!createdCategory) throw new Error("No category found");
+
+  const createdSubCategory = await db
+    .insertInto("subcategory")
+    .values({
+      name: "T-Shirts",
+      description: "T-Shirts",
+      category_id: createdCategory.id,
+    })
+    .returning("id")
+    .executeTakeFirst();
+
+  if (!createdSubCategory) throw new Error("SubCategory not created");
 
   const product = await db
     .insertInto("product")
@@ -113,7 +149,7 @@ it("PATCH by id returns 200", async () => {
       description: "test",
       price: 10,
       stock_quantity: 10,
-      category_id: category.id,
+      subcategory_id: createdSubCategory.id,
     })
     .returningAll()
     .executeTakeFirst();
@@ -124,7 +160,7 @@ it("PATCH by id returns 200", async () => {
     description: "description updated",
     price: 20,
     stock_quantity: 20,
-    category_id: category.id,
+    subcategory_id: createdCategory.id,
   };
 
   await testApiHandler({

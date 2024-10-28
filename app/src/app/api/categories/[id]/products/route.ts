@@ -1,98 +1,5 @@
-import { ProductsInputSchema } from "@/zodTypes";
 import { db } from "@/db";
-import { DatabaseError } from "pg";
 import { type NextRequest } from "next/server";
-
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  try {
-    const jsonInput = await req.json();
-    const validatedInput = ProductsInputSchema.safeParse(jsonInput);
-
-    if (!validatedInput.success) {
-      return new Response(
-        JSON.stringify({
-          status: "error",
-          statusCode: 400,
-          errors: validatedInput.error.errors,
-          detail: "Please make sure all fields are filled out correctly",
-        }),
-        {
-          status: 400,
-        },
-      );
-    }
-
-    try {
-      const category = await db
-        .selectFrom("category")
-        .select(["id"])
-        .where("id", "=", params.id)
-        .executeTakeFirst();
-
-      if (!category) {
-        return new Response(
-          JSON.stringify({
-            status: "error",
-            statusCode: 404,
-            message: "Category not found.",
-            detail: "Please make sure you entered the correct category ID",
-          }),
-          {
-            status: 404,
-          },
-        );
-      }
-
-      const result = await db
-        .insertInto("product")
-        .values({
-          ...validatedInput.data,
-          category_id: category.id,
-        })
-        .returningAll()
-        .executeTakeFirst();
-
-      return new Response(
-        JSON.stringify({
-          data: result,
-          status: "success",
-          message: "Product was created successfully!",
-          statusCode: 201,
-        }),
-        {
-          status: 201,
-        },
-      );
-    } catch (err) {
-      if (err instanceof DatabaseError && err.code === "23505") {
-        return new Response(
-          JSON.stringify({
-            status: "error",
-            statusCode: 409,
-            message: "Product seems to exists.",
-          }),
-          {
-            status: 409,
-          },
-        );
-      }
-    }
-  } catch {
-    return new Response(
-      JSON.stringify({
-        status: "error",
-        statusCode: 500,
-        message: "Something went wrong. Please try again later.",
-      }),
-      {
-        status: 500,
-      },
-    );
-  }
-}
 
 export async function GET(
   req: NextRequest,
@@ -125,8 +32,18 @@ export async function GET(
 
     const products = await db
       .selectFrom("product")
-      .where("category_id", "=", category.id)
-      .selectAll()
+      .innerJoin("subcategory", "subcategory.id", "product.subcategory_id")
+      .innerJoin("category", "category.id", "subcategory.category_id")
+      .select([
+        "product.id",
+        "product.name as product_name",
+        "product.description as product_description",
+        "product.price",
+        "product.stock_quantity",
+        "subcategory.name as subcategory_name",
+        "category.name as category_name",
+      ])
+      .where("category.id", "=", category.id)
       .limit(limit + 1)
       .offset(offset)
       .execute();
@@ -160,7 +77,8 @@ export async function GET(
         status: 200,
       },
     );
-  } catch  {
+  } catch (err) {
+    console.log(err);
     return new Response(
       JSON.stringify({
         status: "error",

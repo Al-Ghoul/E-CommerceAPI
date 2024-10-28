@@ -10,7 +10,7 @@ afterEach(async () => {
 it("GET returns 200", async () => {
   const category = await db
     .insertInto("category")
-    .values({ name: "test category", description: "test" })
+    .values({ name: "test category", description: "test", icon: "test" })
     .returningAll()
     .executeTakeFirst();
 
@@ -38,47 +38,6 @@ it("GET returns 200", async () => {
         },
         status: "success",
         statusCode: 200,
-      });
-    },
-  });
-});
-
-it("POST returns 201", async () => {
-  const category = await db
-    .insertInto("category")
-    .values({ name: "test category", description: "test" })
-    .returningAll()
-    .executeTakeFirst();
-
-  if (!category) throw new Error("Category not found");
-
-  await testApiHandler({
-    appHandler,
-    params: {
-      id: category.id,
-    },
-    test: async ({ fetch }) => {
-      const data = {
-        name: "test",
-        description: "test",
-        price: 10,
-        stock_quantity: 10,
-      };
-      const response = await fetch({
-        method: "POST",
-        body: JSON.stringify(data),
-      });
-      const json = await response.json();
-      expect(response.status).toBe(201);
-      expect(json).toMatchObject({
-        data: {
-          ...Object.keys(data).map((key) => ({
-            [key]: expect.any(String),
-          }))[0],
-        },
-        status: "success",
-        message: "Product was created successfully!",
-        statusCode: 201,
       });
     },
   });
