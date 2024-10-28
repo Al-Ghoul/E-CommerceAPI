@@ -130,7 +130,7 @@ export async function PATCH(
       }
 
       const result = await db
-        .updateTable("category")
+        .updateTable("subcategory")
         .set({ ...validatedInput.data, updated_at: new Date() })
         .where("id", "=", params.id)
         .returningAll()
