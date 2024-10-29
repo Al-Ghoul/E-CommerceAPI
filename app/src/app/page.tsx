@@ -1,7 +1,7 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Featured } from "@/components/ui/core/featured";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -33,8 +33,12 @@ export default function Home() {
               </p>
             </div>
             <div className="space-x-4">
-              <Button>Shop Now</Button>
-              <Button variant="outline">Learn More</Button>
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded"
+              >
+                Shop Now
+              </Link>
             </div>
           </div>
         </div>
