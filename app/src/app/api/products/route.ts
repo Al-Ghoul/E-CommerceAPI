@@ -5,28 +5,50 @@ export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const limit = Number(searchParams.get("limit")) || 1;
   const offset = Number(searchParams.get("offset")) || 0;
+  const category_id = Number(searchParams.get("category")) || -1;
   const sortBy = searchParams.get("sortBy") || "name";
   const orderBy = searchParams.get("orderBy") || "asc";
 
   try {
     let query;
-    query = db
-      .selectFrom("product")
-      .innerJoin("subcategory", "subcategory.id", "product.subcategory_id")
-      .innerJoin("category", "category.id", "subcategory.category_id")
-      .select([
-        "product.id",
-        "product.name as name",
-        "product.description as description",
-        "product.price",
-        "product.stock_quantity",
-        "subcategory.name as subcategory_name",
-        "category.name as category_name",
-      ])
-      // @ts-expect-error: I can not find a specific type for this
-      .orderBy(sortBy, orderBy)
-      .limit(limit + 1)
-      .offset(offset);
+    if (category_id > 0) {
+      query = db
+        .selectFrom("product")
+        .innerJoin("subcategory", "subcategory.id", "product.subcategory_id")
+        .innerJoin("category", "category.id", "subcategory.category_id")
+        .select([
+          "product.id",
+          "product.name as name",
+          "product.description as description",
+          "product.price",
+          "product.stock_quantity",
+          "subcategory.name as subcategory_name",
+          "category.name as category_name",
+        ])
+        .where("category_id", "=", category_id.toString())
+        // @ts-expect-error: I can not find a specific type for this
+        .orderBy(sortBy, orderBy)
+        .limit(limit + 1)
+        .offset(offset);
+    } else {
+      query = db
+        .selectFrom("product")
+        .innerJoin("subcategory", "subcategory.id", "product.subcategory_id")
+        .innerJoin("category", "category.id", "subcategory.category_id")
+        .select([
+          "product.id",
+          "product.name as name",
+          "product.description as description",
+          "product.price",
+          "product.stock_quantity",
+          "subcategory.name as subcategory_name",
+          "category.name as category_name",
+        ])
+        // @ts-expect-error: I can not find a specific type for this
+        .orderBy(sortBy, orderBy)
+        .limit(limit + 1)
+        .offset(offset);
+    }
 
     const products = await query.execute();
 
