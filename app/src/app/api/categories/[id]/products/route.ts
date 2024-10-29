@@ -98,8 +98,6 @@ export async function GET(
         statusCode: 200,
         meta: {
           subCategories: subCategories,
-          category_name: category.name,
-          category_description: category.description,
           has_next_page: products.length > limit,
           has_previous_page: offset > 0,
           total: totalProducts[0].total,
