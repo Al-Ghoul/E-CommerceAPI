@@ -22,16 +22,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { LoadingSpinner } from "@/components/ui/loadingspinner";
-import { Product, Subcategory } from "kysely-codegen";
+import { Subcategory } from "kysely-codegen";
 import Link from "next/link";
 import Image from "next/image";
-
-// @ts-expect-error override types just for this page
-interface CategoryProduct extends Product {
-  id: string;
-  subcategory_name: string;
-  price: string;
-}
 
 export default function ProductsPage({ params }: { params: { id: string } }) {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>();
@@ -83,7 +76,7 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
           {isError || searchIsError ? (
             <div className="text-red-500 text-center">
               <p>
-                Error:{" "}
+                Error:
                 {isError
                   ? error.message
                   : searchIsError
