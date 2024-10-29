@@ -21,13 +21,13 @@ cd app && npm run dev
 
 | URI                                          |                                  Description                                   | Method |
 | :------------------------------------------- | :----------------------------------------------------------------------------: | :----- |
+| /api/auth/login                              |                                Logs in a user.                                 | POST   |
+| /api/auth/refresh                            |                               Refreshes a token.                               | POST   |
 | /api/users                                   |                             Registers a new user.                              | POST   |
 | /api/users/{user_id}/carts                   |                              Creates a user cart.                              | POST   |
 | /api/users/{user_id}/carts                   |                               Gets a user cart.                                | GET    |
 | /api/users/{user_id}/orders                  |                             Creates a user order.                              | POST   |
 | /api/users/{user_id}/orders                  |                               Gets a user order.                               | GET    |
-| /api/auth/login                              |                                Logs in a user.                                 | POST   |
-| /api/auth/refresh                            |                               Refreshes a token.                               | POST   |
 | /api/categories                              |              Gets all categories. paginated with limit & offset.               | GET    |
 | /api/categories                              |                            Creates a new category.                             | POST   |
 | /api/categories/{category_id}                |                            Gets a single category.                             | GET    |
@@ -42,6 +42,7 @@ cd app && npm run dev
 | /api/subcategories/{subcategory_id}          |                            Deletes a sub category.                             | DELETE |
 | /api/subcategories/{subcategory_id}/products | Gets all subcategories for a specific category. paginated with limit & offset. | GET    |
 | /api/subcategories/{subcategory_id}/products |                             Creates a new product.                             | POST   |
+| /api/products                                |               Gets all products. paginated with limit & offset.                | GET    |
 | /api/products/{product_id}                   |                             Gets a single product.                             | GET    |
 | /api/products/{product_id}                   |                               Updates a product.                               | PATCH  |
 | /api/products/{product_id}                   |                               Deletes a product.                               | DELETE |
