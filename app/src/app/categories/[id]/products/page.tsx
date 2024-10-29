@@ -27,7 +27,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default function ProductsPage({ params }: { params: { id: string } }) {
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>();
+  const [selectedSubcategory, setSelectedSubcategory] = useState(-1);
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -35,21 +35,43 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
   const [offset, setOffset] = useState(0);
   const fetchProducts = (
     offset: number,
-    subcategory: string | undefined,
+    subcategory_id: number,
     sortBy: string,
   ) =>
     fetch(
-      `/api/categories/${params.id}/products?limit=${limitBy}&offset=${offset}&subcategory=${subcategory}&sortBy=${sortBy === "priceHigh" ? "price" : sortBy === "priceLow" ? "price" : sortBy}&orderBy=${sortBy === "priceHigh" ? "desc" : sortBy === "priceLow" ? "asc" : "asc"}`,
+      `/api/categories/${params.id}/products?limit=${limitBy}&offset=${offset}&subcategory=${subcategory_id}&sortBy=${sortBy === "priceHigh" ? "price" : sortBy === "priceLow" ? "price" : sortBy}&orderBy=${sortBy === "priceHigh" ? "desc" : sortBy === "priceLow" ? "asc" : "asc"}`,
     ).then(async (res) => {
       if (!res.ok) return Promise.reject(await res.json());
       return res.json();
     });
   const { isPending, isError, error, data, isFetching, isPlaceholderData } =
     useQuery({
-      queryKey: ["categories", offset, selectedSubcategory, sortBy],
+      queryKey: ["products", offset, selectedSubcategory, sortBy],
       queryFn: () => fetchProducts(offset, selectedSubcategory, sortBy),
       placeholderData: keepPreviousData,
     });
+
+  const fetchCategory = () =>
+    fetch(`/api/categories/${params.id}`).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const categoryReq = useQuery({
+    queryKey: ["categories", params.id],
+    queryFn: () => fetchCategory(),
+  });
+
+  const fetchSubCategories = () =>
+    fetch(`/api/categories/${params.id}/subcategories?limit=50`).then(
+      async (res) => {
+        if (!res.ok) return Promise.reject(await res.json());
+        return res.json();
+      },
+    );
+  const subCategoriesReq = useQuery({
+    queryKey: ["subCategories", params.id],
+    queryFn: () => fetchSubCategories(),
+  });
 
   const fetchCategoriesProducts = (q: string) =>
     fetch(`/api/categories/${params.id}/products/search?q=${q}`).then(
@@ -64,7 +86,7 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
     error: searchError,
     isFetching: searchIsFetching,
   } = useQuery({
-    queryKey: ["categories", searchQuery],
+    queryKey: ["products", searchQuery],
     queryFn: () => fetchCategoriesProducts(searchQuery),
     enabled: searchQuery.length > 0,
   });
@@ -94,16 +116,16 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
                       <span className="sr-only">Back to categories</span>
                     </Link>
                     <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                      {isFetching ? (
+                      {categoryReq.isFetching ? (
                         <LoadingSpinner />
                       ) : (
-                        data?.meta.category_name
+                        categoryReq.data.data.name
                       )}
                     </h1>
                   </div>
-                  {data?.meta.category_description ? (
+                  {!categoryReq.isFetching ? (
                     <p className="text-gray-500 dark:text-gray-400">
-                      {data?.meta.category_description}
+                      {categoryReq.data.data.description}
                     </p>
                   ) : null}
                 </div>
@@ -115,7 +137,7 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
                     >
                       <Input
                         className="w-full"
-                        placeholder={`Search ${data?.meta.category_description ? data?.meta.category_description : ""}...`}
+                        placeholder={`Search ${categoryReq.data?.data.description ? categoryReq.data?.data.description : ""}...`}
                         type="search"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -162,29 +184,33 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
                           <div className="grid gap-4 py-4">
                             <div className="space-y-2">
                               <h3 className="font-medium">Subcategory</h3>
-                              {data?.meta.subCategories.map(
-                                (subcategory: Subcategory) => (
-                                  <Button
-                                    // @ts-expect-error the id will be a string
-                                    key={subcategory.id}
-                                    variant={
-                                      selectedSubcategory ===
-                                        (subcategory.id as unknown as string)
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    className="mr-2 mb-2"
-                                    onClick={() => {
-                                      setSelectedSubcategory(
-                                        subcategory.id as unknown as string,
-                                      );
-                                      setOffset(0);
-                                      setSearchQuery("");
-                                    }}
-                                  >
-                                    {subcategory.name}
-                                  </Button>
-                                ),
+                              {subCategoriesReq.isFetching ? (
+                                <LoadingSpinner />
+                              ) : (
+                                subCategoriesReq.data.data.map(
+                                  (subcategory: Subcategory) => (
+                                    <Button
+                                      // @ts-expect-error the id will be a string
+                                      key={subcategory.id}
+                                      variant={
+                                        selectedSubcategory ===
+                                          (subcategory.id as unknown as number)
+                                          ? "default"
+                                          : "outline"
+                                      }
+                                      className="mr-2 mb-2"
+                                      onClick={() => {
+                                        setSelectedSubcategory(
+                                          subcategory.id as unknown as number,
+                                        );
+                                        setOffset(0);
+                                        setSearchQuery("");
+                                      }}
+                                    >
+                                      {subcategory.name}
+                                    </Button>
+                                  ),
+                                )
                               )}
                             </div>
                           </div>
@@ -278,7 +304,7 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
               <div className="flex gap-10 mt-10 justify-center">
                 {isFetching ? (
                   <LoadingSpinner />
-                ) : (
+                ) : (!searchData?.data || searchData?.data?.length < 0) ? (
                   <>
                     <div className="text-center">
                       <Button
@@ -318,7 +344,7 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
                       </Button>
                     </div>
                   </>
-                )}
+                ) : null}
               </div>
             </>
           )}
