@@ -10,5 +10,6 @@ declare global {
     id: string;
     subcategory_name: string;
     price: string;
+    category_name: string;
   }
 }
