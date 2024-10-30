@@ -23,3 +23,8 @@ export async function GenerateRefreshToken(userId: BigInt) {
     .setExpirationTime("5d")
     .sign(new TextEncoder().encode(process.env.TOKEN_SECRET!));
 }
+
+
+export async function VerifyAccessToken(token: string | undefined) {
+  return await jose.jwtVerify(token!, new TextEncoder().encode(process.env.TOKEN_SECRET!));
+}
