@@ -72,3 +72,10 @@ export type SignUpInputClientSchemaType = z.infer<
 >;
 
 export type SignInInputClientSchemaType = z.infer<typeof SignUpInputSchema>;
+
+export const CartItemInputSchema = z.object({
+  product_id: z.string(),
+  quantity: z.number(),
+});
+
+export type CartItemInputSchemaType = z.infer<typeof CartItemInputSchema>;
