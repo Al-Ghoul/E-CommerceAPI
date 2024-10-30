@@ -1,25 +1,21 @@
-import { z } from "zod";
 import { db } from "@/db";
 import * as jose from "jose";
+import { VerifyAccessToken } from "@/utils";
+import { type NextRequest } from "next/server";
+import { CartItemInputSchema } from "@/zodTypes";
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const accessToken = req.headers.get("authorization")?.split(" ")[1];
+    const accessToken =
+      req.headers.get("authorization")?.split(" ")[1] ||
+      req.cookies.get("access_token")?.value;
     const jsonInput = await req.json();
     const validatedInput = CartItemInputSchema.safeParse(jsonInput);
 
-    const tokenData = await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
+    const tokenData = await VerifyAccessToken(accessToken!);
 
     if (!validatedInput.success) {
       return new Response(
@@ -150,20 +146,14 @@ export async function POST(
 }
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const accessToken = req.headers.get("authorization")?.split(" ")[1];
-    const tokenData = await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
+    const accessToken =
+      req.headers.get("authorization")?.split(" ")[1] ||
+      req.cookies.get("access_token")?.value;
+    const tokenData = await VerifyAccessToken(accessToken!);
 
     /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
@@ -232,8 +222,3 @@ export async function GET(
     );
   }
 }
-
- const CartItemInputSchema = z.object({
-  product_id: z.number().transform((value) => String(value)),
-  quantity: z.number(),
-});
