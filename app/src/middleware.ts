@@ -1,40 +1,23 @@
-import * as jose from "jose";
 import { NextResponse, type NextRequest } from "next/server";
+import { VerifyAccessToken } from "./utils";
 
 export async function middleware(req: NextRequest) {
   const accessToken =
     req.headers.get("authorization")?.split(" ")[1] ||
     req.cookies.get("access_token")?.value;
 
-  if (!accessToken) {
-    return new NextResponse(
-      JSON.stringify({
-        status: "error",
-        statusCode: 401,
-        message: "Missing access token",
-        detail: "Please re-login",
-      }),
-      { status: 401 },
-    );
-  }
-
   try {
-    await jose.jwtVerify(
-      accessToken,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
+    await VerifyAccessToken(accessToken);
   } catch {
+    if (req.nextUrl.pathname === "/cart") {
+      return NextResponse.redirect(new URL("/?error=AuthRequired", req.url));
+    }
     return new NextResponse(
       JSON.stringify({
         status: "error",
         statusCode: 401,
-        message: "Invalid or expired access token",
-        detail: "Please re-login",
+        message: "Can not access this resource",
+        detail: "Please login",
       }),
       { status: 401 },
     );
@@ -44,8 +27,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/api/carts/:path*",
-    "/api/users/:path/cart/:path*",
-  ],
+  matcher: ["/cart", "/api/carts/:path*", "/api/users/:path/cart/:path*"],
 };

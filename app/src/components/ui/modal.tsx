@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,7 @@ import {
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export function SignUpModal({
   isOpen,
@@ -20,12 +21,23 @@ export function SignUpModal({
   setIsOpenFN: Dispatch<SetStateAction<boolean>>;
 }) {
   const [activeTab, setActiveTab] = useState("signup-tab");
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
+  useEffect(() => {
+    if (error === "AuthRequired") {
+      setActiveTab("signin-tab");
+      new Promise((resolve) => setTimeout(resolve, 500)).then(() =>
+        toast.error("Please login to continue"),
+      );
+    }
+  }, [error]);
 
   return (
     <div
       className={
         "fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-50" +
-        (isOpen ? "" : " hidden")
+        (isOpen || error === "AuthRequired" ? "" : " hidden")
       }
       onClick={() => setIsOpenFN(false)}
     >
@@ -64,10 +76,11 @@ export function SignUpModal({
             <SignUpInput setActiveTab={setActiveTab} />
           )}
 
-          {activeTab === "signin-tab" && <SignInInput setIsOpenFN={setIsOpenFN} />}
+          {activeTab === "signin-tab" && (
+            <SignInInput setIsOpenFN={setIsOpenFN} />
+          )}
         </div>
       </div>
-
     </div>
   );
 }
@@ -264,6 +277,10 @@ function SignInInput({
     resolver: zodResolver(SignUpInputSchema),
   });
   const router = useRouter();
+  // const pathSegments = usePathname().split("/");
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
   const mutation = useMutation({
     mutationFn: async (data: SignInInputClientSchemaType) => {
       const response = await fetch("/api/auth/login", {
@@ -280,6 +297,9 @@ function SignInInput({
     onSuccess: (data) => {
       toast.success(data.message);
       setIsOpenFN(false);
+      if (error === "AuthRequired") {
+        router.replace("/");
+      }
       router.refresh();
     },
     onError: (error) => {
