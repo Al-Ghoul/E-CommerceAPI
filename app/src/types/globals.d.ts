@@ -13,9 +13,16 @@ declare global {
     category_name: string;
   }
 
-
   interface UserData {
     isAuthenticated: boolean;
     userId: string | undefined;
+  }
+
+  interface CartItemWithPrice {
+    id: number;
+    price: number;
+    quantity: number;
+    name: string;
+    description: string;
   }
 }

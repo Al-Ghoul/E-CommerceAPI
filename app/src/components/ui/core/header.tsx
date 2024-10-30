@@ -50,16 +50,24 @@ export function Header({ onSignUpClick }: { onSignUpClick: () => void }) {
           Categories
         </Link>
         {auth?.isAuthenticated ? (
-          <Link
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-            onClick={async () => {
-              await deleteAuthCookieAction();
-              router.refresh();
-            }}
-          >
-            Signout
-          </Link>
+          <>
+            <Link
+              className="text-sm font-medium hover:underline underline-offset-4"
+              href="/cart"
+            >
+              Cart
+            </Link>
+            <Link
+              className="text-sm font-medium hover:underline underline-offset-4"
+              href="#"
+              onClick={async () => {
+                await deleteAuthCookieAction();
+                router.refresh();
+              }}
+            >
+              Signout
+            </Link>
+          </>
         ) : (
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
