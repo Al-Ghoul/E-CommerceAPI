@@ -9,15 +9,15 @@ const queryClient = new QueryClient();
 
 export default function QueryClientProvider({
   children,
-  isLoggedIn,
+  userData,
 }: Readonly<{
   children: React.ReactNode;
-  isLoggedIn: boolean;
+  userData: UserData;
 }>) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: isLoggedIn }}>
+    <AuthContext.Provider value={{ ...userData }}>
       <QCP client={queryClient}>
         <Header onSignUpClick={() => setIsModalOpen(true)} />
         <SignUpModal isOpen={isModalOpen} setIsOpenFN={setIsModalOpen} />
