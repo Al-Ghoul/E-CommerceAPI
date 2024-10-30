@@ -180,9 +180,17 @@ export async function GET(
     }
 
     const cartItems = await db
-      .selectFrom("cart_item")
-      .where("cart_id", "=", params.id)
-      .selectAll()
+      .selectFrom("product")
+      .innerJoin("cart_item", "product.id", "cart_item.product_id")
+      .where("cart_item.cart_id", "=", params.id)
+      .select([
+        "product.id",
+        "product.name as name",
+        "product.description as description",
+        "product.price as price",
+        "cart_item.quantity",
+        "cart_item.id",
+      ])
       .execute();
 
     return new Response(
