@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,15 +19,20 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { LoadingSpinner } from "@/components/ui/loadingspinner";
 import { Category } from "kysely-codegen";
 import Image from "next/image";
+import { useContext } from "react";
+import { AuthContext } from "@/lib/contexts";
+import { CartItemInputSchemaType } from "@/zodTypes";
+import toast from "react-hot-toast";
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState(-1);
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
+  const auth = useContext(AuthContext);
 
   const limitBy = 12;
   const [offset, setOffset] = useState(0);
@@ -39,12 +43,11 @@ export default function ProductsPage() {
       if (!res.ok) return Promise.reject(await res.json());
       return res.json();
     });
-  const { isPending, isError, error, data, isFetching, isPlaceholderData } =
-    useQuery({
-      queryKey: ["categories", offset, selectedCategory, sortBy],
-      queryFn: () => fetchProducts(offset, selectedCategory, sortBy),
-      placeholderData: keepPreviousData,
-    });
+  const productsReq = useQuery({
+    queryKey: ["categories", offset, selectedCategory, sortBy],
+    queryFn: () => fetchProducts(offset, selectedCategory, sortBy),
+    placeholderData: keepPreviousData,
+  });
 
   const fetchCategories = () =>
     fetch(`/api/categories/?limit=50`).then(async (res) => {
@@ -72,16 +75,60 @@ export default function ProductsPage() {
     enabled: searchQuery.length > 0,
   });
 
+  const fetchCart = () =>
+    fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const cartReq = useQuery({
+    queryKey: ["userCart", auth.userId],
+    queryFn: () => fetchCart(),
+  });
+
+  const createCart = () =>
+    fetch(`/api/users/${auth.userId}/carts`, { method: "POST" }).then(
+      async (res) => {
+        if (!res.ok) return Promise.reject(await res.json());
+        return res.json();
+      },
+    );
+  const createCartReq = useMutation({
+    mutationKey: ["userCart", auth.userId],
+    mutationFn: () => createCart(),
+  });
+
+  const createCartItem = (ItemData: CartItemInputSchemaType) =>
+    fetch(
+      `/api/carts/${cartReq.data?.data.id || createCartReq.data?.data.id}/items`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ItemData),
+      },
+    ).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const createCartItemReq = useMutation({
+    mutationKey: [
+      "userCart",
+      cartReq.data?.data.id || createCartReq.data?.data.id,
+    ],
+    mutationFn: (ItemData: CartItemInputSchemaType) => createCartItem(ItemData),
+  });
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32">
-          {isError || searchIsError ? (
+          {productsReq.isError || searchIsError ? (
             <div className="text-red-500 text-center">
               <p>
                 Error:
-                {isError
-                  ? error.message
+                {productsReq.isError
+                  ? productsReq.error.message
                   : searchIsError
                     ? searchError.message
                     : null}
@@ -177,7 +224,7 @@ export default function ProductsPage() {
                   </div>
                 </div>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {isFetching
+                  {productsReq.isFetching
                     ? Array(12)
                       .fill(0)
                       .map((_, index) => (
@@ -210,48 +257,102 @@ export default function ProductsPage() {
                             <h3 className="font-semibold text-lg mb-1">
                               {product.name}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                              {product.category_name}
-                            </p>
+                            <div className="flex justify-between">
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                {product.category_name}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                {product.stock_quantity.toString()} in stock
+                              </p>
+                            </div>{" "}
                             <div className="flex items-center justify-between">
                               <span className="font-bold">
                                 ${parseFloat(product.price).toFixed(2)}
                               </span>
-                              <Button size="sm">Add to Cart</Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (
+                                    cartReq.isError &&
+                                    !createCartReq.data
+                                  ) {
+                                    createCartReq.mutate();
+                                  } else {
+                                    createCartItemReq.mutate({
+                                      product_id: product.id,
+                                      quantity: 1,
+                                    });
+                                  }
+                                }}
+                              >
+                                Add to Cart
+                              </Button>
                             </div>
                           </div>
                         </div>
                       ))
-                      : data.data.map((product: CategoryProduct) => (
-                        <div
-                          key={product.id}
-                          className="group relative overflow-hidden rounded-lg border bg-white shadow-md transition-shadow hover:shadow-lg dark:bg-gray-950 dark:border-gray-800"
-                        >
-                          <Image
-                            src="/placeholder.svg"
-                            alt={product.name}
-                            className="object-cover w-full h-[200px]"
-                            width={200}
-                            height={200}
-                          />
-                          <div className="p-4">
-                            <h3 className="font-semibold text-lg mb-1">
-                              {product.name}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                              {product.category_name}
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold">
-                                ${parseFloat(product.price).toFixed(2)}
-                              </span>
-                              <Button size="sm">Add to Cart</Button>
+                      : productsReq.data.data.map(
+                        (product: CategoryProduct) => (
+                          <div
+                            key={product.id}
+                            className="group relative overflow-hidden rounded-lg border bg-white shadow-md transition-shadow hover:shadow-lg dark:bg-gray-950 dark:border-gray-800"
+                          >
+                            <Image
+                              src="/placeholder.svg"
+                              alt={product.name}
+                              className="object-cover w-full h-[200px]"
+                              width={200}
+                              height={200}
+                            />
+                            <div className="p-4">
+                              <h3 className="font-semibold text-lg mb-1">
+                                {product.name}
+                              </h3>
+                              <div className="flex justify-between">
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                  {product.category_name}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                  {product.stock_quantity.toString()} in stock
+                                </p>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold">
+                                  ${parseFloat(product.price).toFixed(2)}
+                                </span>
+                                <Button
+                                  disabled={createCartItemReq.isPending}
+                                  size="sm"
+                                  onClick={() => {
+                                    if (
+                                      cartReq.isError &&
+                                      !createCartReq.data
+                                    ) {
+                                      createCartReq.mutate();
+                                    } else {
+                                      createCartItemReq
+                                        .mutateAsync({
+                                          product_id: product.id,
+                                          quantity: 1,
+                                        })
+                                        .then(() => {
+                                          productsReq.refetch();
+                                        })
+                                        .catch((err) => {
+                                          toast.error(err.message);
+                                        });
+                                    }
+                                  }}
+                                >
+                                  Add to Cart
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ),
+                      )}
                 </div>
-                {!isFetching && data?.length === 0 && (
+                {!productsReq.isFetching && productsReq.data?.length === 0 && (
                   <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
                     No products found. Try adjusting your filters or search
                     query.
@@ -259,7 +360,7 @@ export default function ProductsPage() {
                 )}
               </div>
               <div className="flex gap-10 mt-10 justify-center">
-                {isFetching ? (
+                {productsReq.isFetching ? (
                   <LoadingSpinner />
                 ) : !searchData?.data || searchData?.data?.length < 0 ? (
                   <>
@@ -268,9 +369,9 @@ export default function ProductsPage() {
                         variant="outline"
                         className="disabled:bg-gray-300 disabled:opacity-50"
                         disabled={
-                          isPending ||
-                          isPlaceholderData ||
-                          !data?.meta.has_previous_page
+                          productsReq.isPending ||
+                          productsReq.isPlaceholderData ||
+                          !productsReq.data?.meta.has_previous_page
                         }
                         onClick={() => setOffset((old) => old - limitBy)}
                       >
@@ -283,14 +384,14 @@ export default function ProductsPage() {
                         variant="outline"
                         className="disabled:bg-gray-300 disabled:opacity-50"
                         disabled={
-                          isPending ||
-                          isPlaceholderData ||
-                          !data?.meta.has_next_page
+                          productsReq.isPending ||
+                          productsReq.isPlaceholderData ||
+                          !productsReq.data?.meta.has_next_page
                         }
                         onClick={() => {
                           if (
-                            !isPlaceholderData &&
-                            parseInt(data?.meta.total) > offset
+                            !productsReq.isPlaceholderData &&
+                            parseInt(productsReq.data?.meta.total) > offset
                           ) {
                             setOffset((old) => old + limitBy);
                           }
