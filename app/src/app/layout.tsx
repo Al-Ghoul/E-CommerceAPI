@@ -5,6 +5,7 @@ import QueryClientProvider from "./QueryClientProvider";
 import { cookies } from "next/headers";
 import { Toaster } from "react-hot-toast";
 import { Footer } from "@/components/ui/core/footer";
+import { VerifyAccessToken } from "@/utils";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -22,12 +23,19 @@ export const metadata: Metadata = {
   description: "E-Commerce is a store where you can buy products online.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isLoggedIn = cookies().get("access_token") !== undefined;
+  const accessToken = cookies().get("access_token");
+  const isAuthenticated = accessToken !== undefined;
+  let tokenData, userId;
+  try {
+    tokenData = await VerifyAccessToken(accessToken?.value);
+    /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
+    userId = tokenData.payload.sub?.split("|")[1]!;
+  } catch { }
 
   return (
     <html lang="en">
@@ -35,7 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <main className="flex-1">
-          <QueryClientProvider isLoggedIn={isLoggedIn}>
+          <QueryClientProvider userData={{ isAuthenticated, userId }}>
             {children}
           </QueryClientProvider>
         </main>

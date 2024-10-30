@@ -12,4 +12,10 @@ declare global {
     price: string;
     category_name: string;
   }
+
+
+  interface UserData {
+    isAuthenticated: boolean;
+    userId: string | undefined;
+  }
 }
