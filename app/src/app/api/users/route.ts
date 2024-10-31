@@ -1,13 +1,13 @@
 import { db } from "@/db";
 import bcrypt from "bcrypt";
 import { DatabaseError } from "pg";
-import { SignUpInputSchema } from "@/zodTypes";
+import { RegisterInputSchema } from "@/zodTypes";
 const SALT_ROUNDS = 10;
 
 export async function POST(request: Request) {
   try {
     const jsonInput = await request.json();
-    const validatedInput = SignUpInputSchema.safeParse(jsonInput);
+    const validatedInput = RegisterInputSchema.safeParse(jsonInput);
 
     if (!validatedInput.success) {
       const { errors } = validatedInput.error;

@@ -3,30 +3,30 @@ import { useMutation } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  SignInInputClientSchemaType,
-  SignUpInputClientSchema,
-  SignUpInputSchema,
-  type SignUpInputClientSchemaType,
+  LoginInputClientSchemaType,
+  RegisterInputClientSchema,
+  RegisterInputSchema,
+  type RegisterInputClientSchemaType,
 } from "@/zodTypes";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
-export function SignUpModal({
+export function UserAuthModal({
   isOpen,
   setIsOpenFN,
 }: {
   isOpen: boolean;
   setIsOpenFN: Dispatch<SetStateAction<boolean>>;
 }) {
-  const [activeTab, setActiveTab] = useState("signup-tab");
+  const [activeTab, setActiveTab] = useState("register-tab");
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
   useEffect(() => {
     if (error === "AuthRequired") {
-      setActiveTab("signin-tab");
+      setActiveTab("login-tab");
       new Promise((resolve) => setTimeout(resolve, 500)).then(() =>
         toast.error("Please login to continue"),
       );
@@ -49,35 +49,35 @@ export function SignUpModal({
       >
         <div className="relative flex justify-between pb-2">
           <button
-            className={`flex-1 text-center py-2 ${activeTab === "signup-tab" ? "text-blue-500" : "text-gray-500"
+            className={`flex-1 text-center py-2 ${activeTab === "register-tab" ? "text-blue-500" : "text-gray-500"
               }`}
-            onClick={() => setActiveTab("signup-tab")}
+            onClick={() => setActiveTab("register-tab")}
           >
-            SignUp
+            Register
           </button>
           <button
-            className={`flex-1 text-center py-2 ${activeTab === "signin-tab" ? "text-blue-500" : "text-gray-500"
+            className={`flex-1 text-center py-2 ${activeTab === "login-tab" ? "text-blue-500" : "text-gray-500"
               }`}
-            onClick={() => setActiveTab("signin-tab")}
+            onClick={() => setActiveTab("login-tab")}
           >
-            SignIn
+            Login
           </button>
 
           <motion.div
             className="absolute bottom-0 left-0 h-1 bg-blue-500 rounded"
-            animate={{ x: activeTab === "signup-tab" ? "5%" : "95%" }}
+            animate={{ x: activeTab === "register-tab" ? "5%" : "95%" }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
             style={{ width: "50%" }}
           />
         </div>
 
         <div className="bg-white">
-          {activeTab === "signup-tab" && (
-            <SignUpInput setActiveTab={setActiveTab} />
+          {activeTab === "register-tab" && (
+            <RegisterInput setActiveTab={setActiveTab} />
           )}
 
-          {activeTab === "signin-tab" && (
-            <SignInInput setIsOpenFN={setIsOpenFN} />
+          {activeTab === "login-tab" && (
+            <LoginInput setIsOpenFN={setIsOpenFN} />
           )}
         </div>
       </div>
@@ -85,7 +85,7 @@ export function SignUpModal({
   );
 }
 
-function SignUpInput({
+function RegisterInput({
   setActiveTab,
 }: {
   setActiveTab: Dispatch<SetStateAction<string>>;
@@ -94,17 +94,17 @@ function SignUpInput({
     control,
     handleSubmit,
     formState: { errors },
-    setError: setSignUpError,
-  } = useForm<SignUpInputClientSchemaType>({
+    setError: setRegisterError,
+  } = useForm<RegisterInputClientSchemaType>({
     values: {
       email: "Abdo.AlGhouul@gmail.com",
       password: "12345678",
       confirmPassword: "12345678",
     },
-    resolver: zodResolver(SignUpInputClientSchema),
+    resolver: zodResolver(RegisterInputClientSchema),
   });
   const mutation = useMutation({
-    mutationFn: async (data: SignUpInputClientSchemaType) => {
+    mutationFn: async (data: RegisterInputClientSchemaType) => {
       const response = await fetch("/api/users", {
         method: "POST",
         body: JSON.stringify(data),
@@ -118,13 +118,13 @@ function SignUpInput({
     },
     onSuccess: (data) => {
       toast.success(data.message);
-      setActiveTab("signin-tab");
+      setActiveTab("login-tab");
     },
     onError: (error) => {
       if ("data" in error) {
         Object.entries(error.data as { [key: string]: Array<string> }).forEach(
           ([key, value]) => {
-            setSignUpError(key as SignUpInputClientSchemaType & "root", {
+            setRegisterError(key as RegisterInputClientSchemaType & "root", {
               type: "custom",
               message: value[0],
             });
@@ -143,7 +143,7 @@ function SignUpInput({
         e.stopPropagation();
       }}
     >
-      <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
+      <h2 className="text-2xl font-bold mb-4">Register</h2>
       <form
         onSubmit={handleSubmit((data) => {
           mutation.mutate(data);
@@ -252,14 +252,14 @@ function SignUpInput({
           className="bg-blue-500 hover:bg-blue-600 disabled:bg-teal-50 text-white font-bold py-2 px-4 rounded"
           disabled={mutation.isPending}
         >
-          Sign Up
+          Register
         </button>
       </form>
     </div>
   );
 }
 
-function SignInInput({
+function LoginInput({
   setIsOpenFN,
 }: {
   setIsOpenFN: Dispatch<SetStateAction<boolean>>;
@@ -268,13 +268,13 @@ function SignInInput({
     control,
     handleSubmit,
     formState: { errors },
-    setError: setSignUpError,
-  } = useForm<SignInInputClientSchemaType>({
+    setError: setLoginError,
+  } = useForm<LoginInputClientSchemaType>({
     values: {
       email: "Abdo.AlGhouul@gmail.com",
       password: "12345678",
     },
-    resolver: zodResolver(SignUpInputSchema),
+    resolver: zodResolver(RegisterInputSchema),
   });
   const router = useRouter();
   // const pathSegments = usePathname().split("/");
@@ -282,7 +282,7 @@ function SignInInput({
   const error = searchParams.get("error");
 
   const mutation = useMutation({
-    mutationFn: async (data: SignInInputClientSchemaType) => {
+    mutationFn: async (data: LoginInputClientSchemaType) => {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
@@ -306,7 +306,7 @@ function SignInInput({
       if ("data" in error) {
         Object.entries(error.data as { [key: string]: Array<string> }).forEach(
           ([key, value]) => {
-            setSignUpError(key as SignInInputClientSchemaType & "root", {
+            setLoginError(key as LoginInputClientSchemaType & "root", {
               type: "custom",
               message: value[0],
             });
@@ -325,7 +325,7 @@ function SignInInput({
         e.stopPropagation();
       }}
     >
-      <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
+      <h2 className="text-2xl font-bold mb-4">Login</h2>
       <form
         onSubmit={handleSubmit((data) => {
           mutation.mutate(data);
@@ -400,7 +400,7 @@ function SignInInput({
           className="bg-blue-500 hover:bg-blue-600 disabled:bg-teal-50 text-white font-bold py-2 px-4 rounded"
           disabled={mutation.isPending}
         >
-          Sign In
+          Login
         </button>
       </form>
     </div>
