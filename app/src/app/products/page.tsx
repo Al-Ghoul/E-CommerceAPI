@@ -27,6 +27,7 @@ import { useContext } from "react";
 import { AuthContext } from "@/lib/contexts";
 import { CartItemInputSchemaType } from "@/zodTypes";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState(-1);
@@ -120,7 +121,22 @@ export default function ProductsPage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <motion.div
+      className="flex flex-col min-h-screen"
+      initial={{
+        opacity: 0,
+        x: -50,
+      }}
+      animate={{
+        opacity: 1,
+        x: 0,
+      }}
+      transition={{
+        delay: 0,
+        duration: 0.7,
+      }}
+    >
+      {" "}
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32">
           {productsReq.isError || searchIsError ? (
@@ -272,16 +288,32 @@ export default function ProductsPage() {
                               <Button
                                 size="sm"
                                 onClick={() => {
+                                  if (!auth.userId) {
+                                    toast.error(
+                                      "Please login to add products to cart",
+                                    );
+                                    return;
+                                  }
                                   if (
                                     cartReq.isError &&
                                     !createCartReq.data
                                   ) {
                                     createCartReq.mutate();
                                   } else {
-                                    createCartItemReq.mutate({
-                                      product_id: product.id,
-                                      quantity: 1,
-                                    });
+                                    createCartItemReq
+                                      .mutateAsync({
+                                        product_id: product.id,
+                                        quantity: 1,
+                                      })
+                                      .then(() => {
+                                        toast.success(
+                                          `${product.name} added to cart`,
+                                        );
+                                        productsReq.refetch();
+                                      })
+                                      .catch((err) => {
+                                        toast.error(err.message);
+                                      });
                                   }
                                 }}
                               >
@@ -324,6 +356,12 @@ export default function ProductsPage() {
                                   disabled={createCartItemReq.isPending}
                                   size="sm"
                                   onClick={() => {
+                                    if (!auth.userId) {
+                                      toast.error(
+                                        "Please login to add products to cart",
+                                      );
+                                      return;
+                                    }
                                     if (
                                       cartReq.isError &&
                                       !createCartReq.data
@@ -336,6 +374,9 @@ export default function ProductsPage() {
                                           quantity: 1,
                                         })
                                         .then(() => {
+                                          toast.success(
+                                            `${product.name} added to cart`,
+                                          );
                                           productsReq.refetch();
                                         })
                                         .catch((err) => {
@@ -408,6 +449,6 @@ export default function ProductsPage() {
           )}
         </section>
       </main>
-    </div>
+    </motion.div>
   );
 }
