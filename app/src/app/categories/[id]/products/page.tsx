@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Filter, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,16 +20,20 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { LoadingSpinner } from "@/components/ui/loadingspinner";
 import { Subcategory } from "kysely-codegen";
 import Link from "next/link";
 import Image from "next/image";
+import { AuthContext } from "@/lib/contexts";
+import toast from "react-hot-toast";
+import { CartItemInputSchemaType } from "@/zodTypes";
 
 export default function ProductsPage({ params }: { params: { id: string } }) {
   const [selectedSubcategory, setSelectedSubcategory] = useState(-1);
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
+  const auth = useContext(AuthContext);
 
   const limitBy = 12;
   const [offset, setOffset] = useState(0);
@@ -89,6 +93,51 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
     queryKey: ["products", searchQuery],
     queryFn: () => fetchCategoriesProducts(searchQuery),
     enabled: searchQuery.length > 0,
+  });
+
+  const fetchCart = () =>
+    fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const cartReq = useQuery({
+    queryKey: ["userCart", auth.userId],
+    queryFn: () => fetchCart(),
+    enabled: !!auth.userId,
+  });
+
+  const createCart = () =>
+    fetch(`/api/users/${auth.userId}/carts`, { method: "POST" }).then(
+      async (res) => {
+        if (!res.ok) return Promise.reject(await res.json());
+        return res.json();
+      },
+    );
+  const createCartReq = useMutation({
+    mutationKey: ["userCart", auth.userId],
+    mutationFn: () => createCart(),
+  });
+
+  const createCartItem = (ItemData: CartItemInputSchemaType) =>
+    fetch(
+      `/api/carts/${cartReq.data?.data.id || createCartReq.data?.data.id}/items`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ItemData),
+      },
+    ).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const createCartItemReq = useMutation({
+    mutationKey: [
+      "userCart",
+      cartReq.data?.data.id || createCartReq.data?.data.id,
+    ],
+    mutationFn: (ItemData: CartItemInputSchemaType) => createCartItem(ItemData),
   });
 
   return (
@@ -260,7 +309,39 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
                               <span className="font-bold">
                                 ${parseFloat(product.price).toFixed(2)}
                               </span>
-                              <Button size="sm">Add to Cart</Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (!auth.userId) {
+                                    toast.error(
+                                      "Please login to add products to cart",
+                                    );
+                                    return;
+                                  }
+                                  if (
+                                    cartReq.isError &&
+                                    !createCartReq.data
+                                  ) {
+                                    createCartReq.mutate();
+                                  } else {
+                                    createCartItemReq
+                                      .mutateAsync({
+                                        product_id: product.id,
+                                        quantity: 1,
+                                      })
+                                      .then(() => {
+                                        toast.success(
+                                          `${product.name} added to cart`,
+                                        );
+                                      })
+                                      .catch((err) => {
+                                        toast.error(err.message);
+                                      });
+                                  }
+                                }}
+                              >
+                                Add to Cart
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -288,7 +369,39 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
                               <span className="font-bold">
                                 ${parseFloat(product.price).toFixed(2)}
                               </span>
-                              <Button size="sm">Add to Cart</Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (!auth.userId) {
+                                    toast.error(
+                                      "Please login to add products to cart",
+                                    );
+                                    return;
+                                  }
+                                  if (
+                                    cartReq.isError &&
+                                    !createCartReq.data
+                                  ) {
+                                    createCartReq.mutate();
+                                  } else {
+                                    createCartItemReq
+                                      .mutateAsync({
+                                        product_id: product.id,
+                                        quantity: 1,
+                                      })
+                                      .then(() => {
+                                        toast.success(
+                                          `${product.name} added to cart`,
+                                        );
+                                      })
+                                      .catch((err) => {
+                                        toast.error(err.message);
+                                      });
+                                  }
+                                }}
+                              >
+                                Add to Cart
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -304,7 +417,7 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
               <div className="flex gap-10 mt-10 justify-center">
                 {isFetching ? (
                   <LoadingSpinner />
-                ) : (!searchData?.data || searchData?.data?.length < 0) ? (
+                ) : !searchData?.data || searchData?.data?.length < 0 ? (
                   <>
                     <div className="text-center">
                       <Button
