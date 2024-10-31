@@ -10,6 +10,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { LoadingSpinner } from "@/components/ui/loadingspinner";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+import Image from "next/image";
+
 interface CartItemInputType {
   itemId: number;
   quantity: number;
@@ -76,7 +79,22 @@ export default function CartPage() {
   }, [cartItemsReq.data?.data]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <motion.div
+      className="flex flex-col min-h-screen"
+      initial={{
+        opacity: 0,
+        y: -50,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        delay: 0,
+        duration: 0.7,
+      }}
+    >
+      {" "}
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
@@ -100,7 +118,7 @@ export default function CartPage() {
               <div className="md:col-span-2">
                 {cartItemsReq.data?.data.map((item: CartItemWithPrice) => (
                   <div key={item.id} className="flex gap-4 py-4 border-b">
-                    <img
+                    <Image
                       src="/placeholder.svg"
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded"
@@ -125,7 +143,8 @@ export default function CartPage() {
                               .then(() => {
                                 cartItemsReq.refetch();
                                 toast.success(`${item.name} decreased by 1`);
-                              }).catch((err) => {
+                              })
+                              .catch((err) => {
                                 toast.error(err.message);
                               });
                           }}
@@ -146,7 +165,8 @@ export default function CartPage() {
                               .then(() => {
                                 cartItemsReq.refetch();
                                 toast.success(`${item.name} increased by 1`);
-                              }).catch((err) => {
+                              })
+                              .catch((err) => {
                                 toast.error(err.message);
                               });
                           }}
@@ -165,7 +185,8 @@ export default function CartPage() {
                               .then(() => {
                                 cartItemsReq.refetch();
                                 toast.success(`${item.name} increased by 1`);
-                              }).catch((err) => {
+                              })
+                              .catch((err) => {
                                 toast.error(err.message);
                               });
                           }}
@@ -237,6 +258,6 @@ export default function CartPage() {
           </div>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }
