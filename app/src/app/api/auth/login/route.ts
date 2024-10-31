@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 export async function POST(request: Request) {
   try {
     const jsonInput = await request.json();
-    const validatedInput = SignInInputSchema.safeParse(jsonInput);
+    const validatedInput = LoginInputSchema.safeParse(jsonInput);
 
     if (!validatedInput.success) {
       const { errors } = validatedInput.error;
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
   }
 }
 
-const SignInInputSchema = z.object({
+const LoginInputSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
 });

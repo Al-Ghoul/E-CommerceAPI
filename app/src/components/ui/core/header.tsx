@@ -6,7 +6,7 @@ import { deleteAuthCookieAction } from "@/lib/serverActions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export function Header({ onSignUpClick }: { onSignUpClick: () => void }) {
+export function Header({ onRegisterClick }: { onRegisterClick: () => void }) {
   const auth = useContext(AuthContext);
   const router = useRouter();
 
@@ -65,16 +65,16 @@ export function Header({ onSignUpClick }: { onSignUpClick: () => void }) {
                 router.refresh();
               }}
             >
-              Signout
+            Logout
             </Link>
           </>
         ) : (
           <Link
             className="text-sm font-medium hover:underline underline-offset-4"
             href="#"
-            onClick={onSignUpClick}
+            onClick={onRegisterClick}
           >
-            Sign Up
+          Register
           </Link>
         )}
       </nav>

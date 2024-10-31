@@ -36,7 +36,7 @@ export const ProductsPatchInputSchema = z.object({
     .transform((value) => String(value)),
 });
 
-export const SignUpInputSchema = z.object({
+export const RegisterInputSchema = z.object({
   email: z
     .string({
       required_error: "Email is required",
@@ -51,7 +51,7 @@ export const SignUpInputSchema = z.object({
     .min(8, "Password must be at least 8 characters"),
 });
 
-export const SignUpInputClientSchema = SignUpInputSchema.extend({
+export const RegisterInputClientSchema = RegisterInputSchema.extend({
   confirmPassword: z
     .string({
       required_error: "Confirm Password is required",
@@ -67,11 +67,11 @@ export const SignUpInputClientSchema = SignUpInputSchema.extend({
     });
 });
 
-export type SignUpInputClientSchemaType = z.infer<
-  typeof SignUpInputClientSchema
+export type RegisterInputClientSchemaType = z.infer<
+  typeof RegisterInputClientSchema
 >;
 
-export type SignInInputClientSchemaType = z.infer<typeof SignUpInputSchema>;
+export type LoginInputClientSchemaType = z.infer<typeof RegisterInputSchema>;
 
 export const CartItemInputSchema = z.object({
   product_id: z.string(),
