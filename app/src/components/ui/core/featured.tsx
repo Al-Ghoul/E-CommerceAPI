@@ -2,11 +2,16 @@ import { ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { CartItemInputSchemaType } from "@/zodTypes";
+import { useContext } from "react";
+import { AuthContext } from "@/lib/contexts";
+import toast from "react-hot-toast";
 
 export function Featured() {
+  const auth = useContext(AuthContext);
   const limitBy = 4;
   const fetchProducts = () =>
     fetch(`/api/products?limit=${limitBy}`).then(async (res) => {
@@ -16,6 +21,51 @@ export function Featured() {
   const { isPending, isError, error, data } = useQuery({
     queryKey: ["categories", limitBy],
     queryFn: () => fetchProducts(),
+  });
+
+  const fetchCart = () =>
+    fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const cartReq = useQuery({
+    queryKey: ["userCart", auth.userId],
+    queryFn: () => fetchCart(),
+    enabled: !!auth.userId,
+  });
+
+  const createCart = () =>
+    fetch(`/api/users/${auth.userId}/carts`, { method: "POST" }).then(
+      async (res) => {
+        if (!res.ok) return Promise.reject(await res.json());
+        return res.json();
+      },
+    );
+  const createCartReq = useMutation({
+    mutationKey: ["userCart", auth.userId],
+    mutationFn: () => createCart(),
+  });
+
+  const createCartItem = (ItemData: CartItemInputSchemaType) =>
+    fetch(
+      `/api/carts/${cartReq.data?.data.id || createCartReq.data?.data.id}/items`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ItemData),
+      },
+    ).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const createCartItemReq = useMutation({
+    mutationKey: [
+      "userCart",
+      cartReq.data?.data.id || createCartReq.data?.data.id,
+    ],
+    mutationFn: (ItemData: CartItemInputSchemaType) => createCartItem(ItemData),
   });
 
   return (
@@ -62,7 +112,32 @@ export function Featured() {
                     <span className="font-bold">
                       ${parseFloat(product.price).toFixed(2)}
                     </span>
-                    <Button size="sm">Add to Cart</Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (!auth.userId) {
+                          toast.error("Please login to add products to cart");
+                          return;
+                        }
+                        if (cartReq.isError && !createCartReq.data) {
+                          createCartReq.mutate();
+                        } else {
+                          createCartItemReq
+                            .mutateAsync({
+                              product_id: product.id,
+                              quantity: 1,
+                            })
+                            .then(() => {
+                              toast.success(`${product.name} added to cart`);
+                            })
+                            .catch((err) => {
+                              toast.error(err.message);
+                            });
+                        }
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
                   </div>
                 </div>
               </div>
