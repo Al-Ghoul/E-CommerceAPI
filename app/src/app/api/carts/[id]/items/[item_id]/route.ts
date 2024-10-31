@@ -14,7 +14,6 @@ export async function PATCH(
       req.cookies.get("access_token")?.value;
 
     const jsonInput = await req.json();
-    console.log(jsonInput);
     const tokenData = await VerifyAccessToken(accessToken!);
     
     const validatedInput = CartItemPatchInputSchema.safeParse(jsonInput);
