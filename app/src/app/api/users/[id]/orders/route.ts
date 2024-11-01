@@ -2,25 +2,20 @@ import { z } from "zod";
 import * as jose from "jose";
 import { db } from "@/db";
 import "@/globals";
+import { type NextRequest } from "next/server";
+import { VerifyAccessToken } from "@/utils";
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const accessToken = req.headers.get("authorization")?.split(" ")[1];
+    const accessToken =
+      req.headers.get("authorization")?.split(" ")[1] ||
+      req.cookies.get("access_token")?.value;
     const jsonInput = await req.json();
     const validatedInput = OrdersInputSchema.safeParse(jsonInput);
-
-    const tokenData = await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
+    const tokenData = await VerifyAccessToken(accessToken!);
 
     /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
@@ -162,20 +157,17 @@ export async function POST(
 }
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const accessToken = req.headers.get("authorization")?.split(" ")[1];
-    const tokenData = await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
+    const accessToken =
+      req.headers.get("authorization")?.split(" ")[1] ||
+      req.cookies.get("access_token")?.value;
+    const tokenData = await VerifyAccessToken(accessToken!);
+    const searchParams = req.nextUrl.searchParams;
+    const limit = Number(searchParams.get("limit")) || 1;
+    const offset = Number(searchParams.get("offset")) || 0;
 
     /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
@@ -196,14 +188,36 @@ export async function GET(
       .selectFrom("order")
       .where("user_id", "=", user_id)
       .selectAll()
+      .limit(limit + 1)
+      .offset(offset)
       .execute();
+
+    const totalOrders = await db
+      .selectFrom("order")
+      .where("user_id", "=", user_id)
+      .select(({ fn }) => [fn.countAll().as("total")])
+      .execute();
+
+    const ordersData = orders.slice(
+      0,
+      orders.length > limit + 1 ? orders.length - 1 : limit,
+    );
 
     return new Response(
       JSON.stringify({
-        data: orders,
+        data: ordersData,
         status: "success",
         message: "Orders were retrieved successfully!",
         statusCode: 200,
+        meta: {
+          has_next_page: orders.length > limit,
+          has_previous_page: offset > 0,
+          total: totalOrders[0].total,
+          count: ordersData.length,
+          current_page: offset / limit + 1,
+          per_page: limit,
+          last_page: Math.ceil(Number(totalOrders[0].total) / limit),
+        },
       }),
       {
         status: 200,
