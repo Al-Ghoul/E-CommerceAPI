@@ -28,8 +28,6 @@ it("GET returns 200", async () => {
       expect(json).toStrictEqual({
         data: [],
         meta: {
-          category_description: "test",
-          category_name: "test category",
           count: 0,
           current_page: 1,
           has_next_page: false,

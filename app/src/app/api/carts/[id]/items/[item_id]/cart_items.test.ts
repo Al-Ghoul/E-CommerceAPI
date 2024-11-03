@@ -25,7 +25,7 @@ it("PATCH returns 200", async () => {
 
   const createdCategory = await db
     .insertInto("category")
-    .values({ name: "Clothing", description: "Clothing", icon: "clothing" })
+    .values({ name: "Clothing-test", description: "Clothing-test", icon: "clothing" })
     .returning("id")
     .executeTakeFirst();
 
@@ -34,8 +34,8 @@ it("PATCH returns 200", async () => {
   const createdSubCategory = await db
     .insertInto("subcategory")
     .values({
-      name: "T-Shirts",
-      description: "T-Shirts",
+      name: "T-Shirts-test",
+      description: "T-Shirts-test",
       category_id: createdCategory.id,
     })
     .returning("id")
@@ -46,8 +46,8 @@ it("PATCH returns 200", async () => {
   const createdProduct = await db
     .insertInto("product")
     .values({
-      name: "T-Shirt",
-      description: "T-Shirt",
+      name: "T-Shirt-test",
+      description: "T-Shirt-test",
       price: 19.99,
       stock_quantity: 100,
       subcategory_id: createdSubCategory.id,
