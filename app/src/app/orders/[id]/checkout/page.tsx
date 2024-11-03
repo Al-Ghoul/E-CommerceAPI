@@ -352,7 +352,7 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
                           }}
                           render={({ field: { onChange, onBlur, value } }) => (
                             <input
-                              type="number"
+                              type="text"
                               id="card_number"
                               name="card_number"
                               className="w-full border border-gray-400 p-2 rounded-lg"
