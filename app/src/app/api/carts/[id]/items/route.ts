@@ -190,6 +190,8 @@ export async function GET(
         "product.price as price",
         "cart_item.quantity",
         "cart_item.id",
+        "cart_item.created_at",
+        "cart_item.updated_at",
       ])
       .execute();
 
