@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { db } from "@/db";
 import * as jose from "jose";
+import { VerifyAccessToken } from "@/utils";
 
 export async function PATCH(
   req: Request,
@@ -10,17 +11,8 @@ export async function PATCH(
     const accessToken = req.headers.get("authorization")?.split(" ")[1];
     const jsonInput = await req.json();
     const validatedInput = CartPatchInputSchema.safeParse(jsonInput);
-
-    const tokenData = await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
-
+    const tokenData =  await VerifyAccessToken(accessToken!);
+    
     if (!validatedInput.success) {
       return new Response(
         JSON.stringify({
