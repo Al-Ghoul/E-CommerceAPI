@@ -92,7 +92,7 @@ export const ShippingAddressInputSchema = z.object({
 export type ShippingAddressInputSchemaType = z.infer<typeof ShippingAddressInputSchema>;
 
 export const CreditCardInputSchema = z.object({
-  card_number: z.number(),
+  card_number: z.number().transform((value) => String(value)),
   card_holder: z.string(),
   card_expiry: z.string(),
   card_cvv: z.string(),
