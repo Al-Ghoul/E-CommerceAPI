@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Cart } from "kysely-codegen";
 
 interface CartItemInputType {
   itemId: number;
@@ -29,13 +30,13 @@ export default function CartPage() {
       if (!res.ok) return Promise.reject(await res.json());
       return res.json();
     });
-  const cartReq = useQuery({
+  const cartReq = useQuery<{data : Cart}, Error>({
     queryKey: ["userCart", auth.userId],
     queryFn: () => fetchCart(),
   });
 
   const fetchCartItems = () =>
-    fetch(`/api/carts/${cartReq.data.data?.id}/items`).then(async (res) => {
+    fetch(`/api/carts/${cartReq.data?.data?.id}/items`).then(async (res) => {
       if (!res.ok) return Promise.reject(await res.json());
       return res.json();
     });
@@ -46,7 +47,7 @@ export default function CartPage() {
   });
 
   const updateCartItem = (input: CartItemInputType) =>
-    fetch(`/api/carts/${cartReq.data.data?.id}/items/${input.itemId}`, {
+    fetch(`/api/carts/${cartReq.data?.data?.id}/items/${input.itemId}`, {
       method: "PATCH",
       body: JSON.stringify({ quantity: input.quantity }),
     }).then(async (res) => {
@@ -59,7 +60,7 @@ export default function CartPage() {
   });
 
   const deleteCartItem = (itemId: number) =>
-    fetch(`/api/carts/${cartReq.data.data?.id}/items/${itemId}`, {
+    fetch(`/api/carts/${cartReq.data?.data?.id}/items/${itemId}`, {
       method: "DELETE",
     }).then(async (res) => {
       if (!res.ok) return Promise.reject(await res.json());
@@ -258,13 +259,12 @@ export default function CartPage() {
                     className="w-full mt-6"
                     onClick={() => {
                       createOrderReq
-                        .mutateAsync(Number(cartReq.data.data?.id))
+                        .mutateAsync(Number(cartReq.data?.data?.id))
                         .then(() => {
                           toast.success("Order placed successfully");
                           router.push("/orders");
                         })
                         .catch((err) => {
-                          console.log(err);
                           toast.error(err.message || err.detail);
                         });
                     }}
