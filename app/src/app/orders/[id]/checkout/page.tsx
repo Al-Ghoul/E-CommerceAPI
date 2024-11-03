@@ -75,7 +75,7 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
     setError: setPaymentError,
   } = useForm<CreditCardInputSchemaType>({
     values: {
-      card_number: 4242424242424242,
+      card_number: (4242424242424242).toString(),
       card_holder: "Abdulrahman AlGhoul",
       card_expiry: "12/24",
       card_cvv: "123",
