@@ -136,7 +136,6 @@ export default function ProductsPage() {
         duration: 0.7,
       }}
     >
-      {" "}
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32">
           {productsReq.isError || searchIsError ? (
@@ -280,7 +279,7 @@ export default function ProductsPage() {
                               <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                                 {product.stock_quantity.toString()} in stock
                               </p>
-                            </div>{" "}
+                            </div>
                             <div className="flex items-center justify-between">
                               <span className="font-bold">
                                 ${parseFloat(product.price).toFixed(2)}
@@ -393,7 +392,7 @@ export default function ProductsPage() {
                         ),
                       )}
                 </div>
-                {!productsReq.isFetching && productsReq.data?.length === 0 && (
+                {!productsReq.isFetching && productsReq.data.data?.length === 0 && (
                   <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
                     No products found. Try adjusting your filters or search
                     query.
