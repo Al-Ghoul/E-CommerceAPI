@@ -53,6 +53,12 @@ export function Header({ onRegisterClick }: { onRegisterClick: () => void }) {
           <>
             <Link
               className="text-sm font-medium hover:underline underline-offset-4"
+              href="/orders"
+            >
+              Orders
+            </Link>
+            <Link
+              className="text-sm font-medium hover:underline underline-offset-4"
               href="/cart"
             >
               Cart
@@ -65,7 +71,7 @@ export function Header({ onRegisterClick }: { onRegisterClick: () => void }) {
                 router.refresh();
               }}
             >
-            Logout
+              Logout
             </Link>
           </>
         ) : (
@@ -74,7 +80,7 @@ export function Header({ onRegisterClick }: { onRegisterClick: () => void }) {
             href="#"
             onClick={onRegisterClick}
           >
-          Register
+            Register
           </Link>
         )}
       </nav>
