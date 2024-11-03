@@ -95,7 +95,7 @@ export default function OrderDetails({ params }: { params: { id: string } }) {
                 <span>Order {getOrderReq.data.data.id}</span>
                 <Badge
                   className={
-                    statusColors[getOrderReq.data.data.fulfillment_status]
+                    statusColors[getOrderReq.data.data.fulfillment_status as keyof typeof statusColors]
                   }
                 >
                   {getOrderReq.data.data.fulfillment_status
@@ -121,7 +121,7 @@ export default function OrderDetails({ params }: { params: { id: string } }) {
                 <h2 className="text-lg font-semibold mb-2">Items</h2>
                 <ul className="space-y-2">
                   {!getOrderItemsReq.isFetching &&
-                    getOrderItemsReq.data.data.map((item) => (
+                    getOrderItemsReq.data.data.map((item: OrderItem) => (
                       <li key={item.id} className="flex justify-between">
                         <span>
                           {item.name} (x{item.quantity})
