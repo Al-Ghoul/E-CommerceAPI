@@ -25,4 +25,21 @@ declare global {
     name: string;
     description: string;
   }
+
+  interface Order {
+    id: string;
+    created_at: string;
+    fulfillment_status: "pending" | "shipped" | "delivered" | "canceled";
+    total_amount: string;
+    updated_at: string;
+    user_id: string;
+    cart_id: string;
+  }
+
+  interface OrderItem {
+    id: number;
+    name: string;
+    quantity: number;
+    price_at_purchase: float;
+  }
 }
