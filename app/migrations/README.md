@@ -15,14 +15,18 @@ USER ||--}o ORDER : has
 CATEGORY ||--o{ SUBCATEGORY : "has"
 SUBCATEGORY ||--o{ PRODUCT : "has"
 
-ORDER ||--|| PAYMENT : has
+ORDER ||--|| PAYMENT_INFO : has
 ORDER ||--}o ORDER_ITEM : has
+ORDER ||--|| SHIPPING_INFO : has
 
 PRODUCT ||--}o CART_ITEM : has
 PRODUCT ||--}o ORDER_ITEM : has
 
 CART ||--}o CART_ITEM : has
 CART ||--|| ORDER : has
+
+CARD_INFO ||--}o PAYMENT_INFO : has
+PAYPAL_INFO ||--}o PAYMENT_INFO : has
 
 
 
@@ -135,13 +139,49 @@ ORDER_ITEM {
    DATETIME updated_at
 }
 
-PAYMENT {
+PAYMENT_INFO {
    INTEGER id PK
    INTEGER order_id FK
-   VARCHAR(255) method
-   ENUM status "paid, pending, failed"
+   ENUM method "credit_card, cod, paypal"
+   ENUM status "paid, pending, failed, processing, refunded, canceled"
+   VARCHAR(255) provider
+   VARCHAR(255) customer_reference_id
    VARCHAR(255) transaction_id
    DECIMAL amount
+   VARCHAR(3) currency
+   DATETIME created_at
+   DATETIME updated_at
+}
+
+CARD_INFO {
+   INTEGER id PK
+   INTEGER payment_info_id FK
+   VARCHAR(255) card_holder
+   VARCHAR(255) card_cvv
+   VARCHAR(255) card_number
+   VARCHAR(255) card_expiry
+   DATETIME created_at
+   DATETIME updated_at
+}
+
+PAYPAL_INFO {
+   INTEGER id PK
+   INTEGER payment_info_id FK
+   VARCHAR(255) email
+   DATETIME created_at
+   DATETIME updated_at
+}
+
+SHIPPING_INFO {
+   INTEGER id PK
+   INTEGER order_id FK
+   VARCHAR(255) name
+   VARCHAR(255) address
+   VARCHAR(255) city
+   VARCHAR(255) country
+   VARCHAR(255) postal_code
+   VARCHAR(255) tracking_number
+   ENUM status "pending, in_transit, delivered, returned"
    DATETIME created_at
    DATETIME updated_at
 }
