@@ -11,7 +11,10 @@ export async function middleware(req: NextRequest) {
   } catch {
     if (req.nextUrl.pathname === "/cart") {
       return NextResponse.redirect(new URL("/?error=AuthRequired", req.url));
+    } else if (req.nextUrl.pathname === "/orders") {
+      return NextResponse.redirect(new URL("/?error=AuthRequired", req.url));
     }
+
     return new NextResponse(
       JSON.stringify({
         status: "error",
@@ -27,5 +30,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/cart", "/api/carts/:path*", "/api/users/:path/cart/:path*"],
+  matcher: [
+    "/cart",
+    "/orders/:path*",
+    "/api/carts/:path*",
+    "/api/users/:path/cart/:path*",
+  ],
 };
