@@ -79,3 +79,24 @@ export const CartItemInputSchema = z.object({
 });
 
 export type CartItemInputSchemaType = z.infer<typeof CartItemInputSchema>;
+
+export const ShippingAddressInputSchema = z.object({
+  full_name: z.string(),
+  address: z.string(),
+  city: z.string(),
+  country: z.string(),
+  postal_code: z.string(),
+  payment_method: z.enum(["cod", "paypal", "credit_card"]),
+});
+
+export type ShippingAddressInputSchemaType = z.infer<typeof ShippingAddressInputSchema>;
+
+export const CreditCardInputSchema = z.object({
+  card_number: z.number(),
+  card_holder: z.string(),
+  card_expiry: z.string(),
+  card_cvv: z.string(),
+});
+
+export type CreditCardInputSchemaType = z.infer<typeof CreditCardInputSchema>;
+
