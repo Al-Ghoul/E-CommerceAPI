@@ -67,15 +67,6 @@ export async function POST(
       );
     }
 
-    await db
-      .updateTable("product")
-      .set({
-        stock_quantity: newStockQuantity.toString(),
-        updated_at: new Date(),
-      })
-      .where("id", "=", validatedInput.data.product_id)
-      .execute();
-
     /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     const selectedCart = await db
@@ -100,6 +91,15 @@ export async function POST(
         },
       );
     }
+
+    await db
+      .updateTable("product")
+      .set({
+        stock_quantity: newStockQuantity.toString(),
+        updated_at: new Date(),
+      })
+      .where("id", "=", validatedInput.data.product_id)
+      .execute();
 
     const createdCartItem = await db
       .insertInto("cart_item")
