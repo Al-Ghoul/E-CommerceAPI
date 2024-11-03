@@ -12,6 +12,7 @@ import { LoadingSpinner } from "@/components/ui/loadingspinner";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface CartItemInputType {
   itemId: number;
@@ -21,6 +22,7 @@ interface CartItemInputType {
 export default function CartPage() {
   const auth = useContext(AuthContext);
   const [total, setTotal] = useState(0);
+  const router = useRouter();
 
   const fetchCart = () =>
     fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
@@ -68,6 +70,19 @@ export default function CartPage() {
     mutationFn: (itemId: number) => deleteCartItem(itemId),
   });
 
+  const createOrder = (cart_id: number) =>
+    fetch(`/api/users/${auth.userId}/orders`, {
+      method: "POST",
+      body: JSON.stringify({ cart_id }),
+    }).then(async (res) => {
+      if (!res.ok) return Promise.reject(await res.json());
+      return res.json();
+    });
+  const createOrderReq = useMutation({
+    mutationKey: ["userOrder", auth.userId],
+    mutationFn: (cart_id: number) => createOrder(cart_id),
+  });
+
   useEffect(() => {
     const newTotal =
       cartItemsReq.data?.data.reduce(
@@ -94,7 +109,6 @@ export default function CartPage() {
         duration: 0.7,
       }}
     >
-      {" "}
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
@@ -103,9 +117,9 @@ export default function CartPage() {
               <p>
                 Error:
                 {cartReq.isError
-                  ? cartReq.error.message
+                  ? cartReq.error.detail
                   : cartItemsReq.isError
-                    ? cartItemsReq.error.message
+                    ? cartItemsReq.error.detail
                     : null}
               </p>
             </div>
@@ -239,7 +253,22 @@ export default function CartPage() {
                     <span>Total</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
-                  <Button className="w-full mt-6">
+                  <Button
+                    disabled={createOrderReq.isPending}
+                    className="w-full mt-6"
+                    onClick={() => {
+                      createOrderReq
+                        .mutateAsync(Number(cartReq.data.data?.id))
+                        .then(() => {
+                          toast.success("Order placed successfully");
+                          router.push("/orders");
+                        })
+                        .catch((err) => {
+                          console.log(err);
+                          toast.error(err.message || err.detail);
+                        });
+                    }}
+                  >
                     Proceed to Checkout
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
