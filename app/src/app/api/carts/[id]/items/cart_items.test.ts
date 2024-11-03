@@ -25,7 +25,7 @@ it("POST returns 201", async () => {
 
   const createdCategory = await db
     .insertInto("category")
-    .values({ name: "Clothing", description: "Clothing", icon: "clothing" })
+    .values({ name: "Clothing-test", description: "Clothing", icon: "clothing" })
     .returning("id")
     .executeTakeFirst();
 
@@ -34,7 +34,7 @@ it("POST returns 201", async () => {
   const createdSubCategory = await db
     .insertInto("subcategory")
     .values({
-      name: "T-Shirts",
+      name: "T-Shirts-test",
       description: "T-Shirts",
       category_id: createdCategory.id,
     })
@@ -46,7 +46,7 @@ it("POST returns 201", async () => {
   const createdProduct = await db
     .insertInto("product")
     .values({
-      name: "T-Shirt",
+      name: "T-Shirt-test",
       description: "T-Shirt",
       price: 19.99,
       stock_quantity: 100,
@@ -64,7 +64,7 @@ it("POST returns 201", async () => {
     },
     test: async ({ fetch }) => {
       const data = {
-        product_id: Number(createdProduct.id),
+        product_id: createdProduct.id,
         quantity: 5,
       };
       const response = await fetch({
@@ -163,7 +163,8 @@ it("GET returns 200", async () => {
       expect(response.status).toBe(200);
       expect(json).toMatchObject({
         data: createdCartItem.map((item) => ({
-          ...item,
+          id: item.id,
+          quantity: item.quantity,
           created_at: expect.any(String),
           updated_at: expect.any(String),
         })),

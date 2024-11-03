@@ -112,7 +112,9 @@ it("GET returns 200", async () => {
       expect(response.status).toBe(200);
       expect(json).toMatchObject({
         data: createdOrderItems.map((item) => ({
-          ...item,
+          price_at_purchase: item.price_at_purchase,
+          quantity: item.quantity,
+          id: item.id,
           created_at: expect.any(String),
           updated_at: expect.any(String),
         })),
