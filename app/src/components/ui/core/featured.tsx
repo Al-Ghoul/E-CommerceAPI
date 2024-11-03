@@ -25,46 +25,37 @@ export function Featured() {
 
   const fetchCart = () =>
     fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
+      if (!res.ok) {
+        if (res.status === 404) {
+          const result = await fetch(`/api/users/${auth.userId}/carts`, {
+            method: "POST",
+          });
+          if (!result.ok) return Promise.reject(await result.json());
+          return result.json();
+        }
+        return Promise.reject(await res.json());
+      }
       return res.json();
     });
   const cartReq = useQuery({
     queryKey: ["userCart", auth.userId],
     queryFn: () => fetchCart(),
-    enabled: !!auth.userId,
-  });
-
-  const createCart = () =>
-    fetch(`/api/users/${auth.userId}/carts`, { method: "POST" }).then(
-      async (res) => {
-        if (!res.ok) return Promise.reject(await res.json());
-        return res.json();
-      },
-    );
-  const createCartReq = useMutation({
-    mutationKey: ["userCart", auth.userId],
-    mutationFn: () => createCart(),
+    enabled: auth.isAuthenticated,
   });
 
   const createCartItem = (ItemData: CartItemInputSchemaType) =>
-    fetch(
-      `/api/carts/${cartReq.data?.data.id || createCartReq.data?.data.id}/items`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ItemData),
+    fetch(`/api/carts/${cartReq.data?.data.id}/items`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    ).then(async (res) => {
+      body: JSON.stringify(ItemData),
+    }).then(async (res) => {
       if (!res.ok) return Promise.reject(await res.json());
       return res.json();
     });
   const createCartItemReq = useMutation({
-    mutationKey: [
-      "userCart",
-      cartReq.data?.data.id || createCartReq.data?.data.id,
-    ],
+    mutationKey: ["userCart", cartReq.data?.data.id],
     mutationFn: (ItemData: CartItemInputSchemaType) => createCartItem(ItemData),
   });
 
@@ -113,27 +104,24 @@ export function Featured() {
                       ${parseFloat(product.price).toFixed(2)}
                     </span>
                     <Button
+                      disabled={cartReq.isFetching || createCartItemReq.isPending}
                       size="sm"
                       onClick={() => {
                         if (!auth.userId) {
                           toast.error("Please login to add products to cart");
                           return;
                         }
-                        if (cartReq.isError && !createCartReq.data) {
-                          createCartReq.mutate();
-                        } else {
-                          createCartItemReq
-                            .mutateAsync({
-                              product_id: product.id,
-                              quantity: 1,
-                            })
-                            .then(() => {
-                              toast.success(`${product.name} added to cart`);
-                            })
-                            .catch((err) => {
-                              toast.error(err.message);
-                            });
-                        }
+                        createCartItemReq
+                          .mutateAsync({
+                            product_id: product.id,
+                            quantity: 1,
+                          })
+                          .then(() => {
+                            toast.success(`${product.name} added to cart`);
+                          })
+                          .catch((err) => {
+                            toast.error(err.message);
+                          });
                       }}
                     >
                       Add to Cart
@@ -144,15 +132,21 @@ export function Featured() {
             ))}
           </div>
         )}
-        <div className="mt-10 text-center">
-          <Link
-            href="/products"
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-          >
-            View All Products
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Link>
-        </div>
+        {!isPending && data.data?.length === 0 ? (
+          <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
+            No products found.
+          </p>
+        ) : (
+          <div className="mt-10 text-center">
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
+              View All Products
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

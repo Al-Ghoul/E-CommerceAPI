@@ -78,45 +78,37 @@ export default function ProductsPage() {
 
   const fetchCart = () =>
     fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
+      if (!res.ok) {
+        if (res.status === 404) {
+          const result = await fetch(`/api/users/${auth.userId}/carts`, {
+            method: "POST",
+          });
+          if (!result.ok) return Promise.reject(await result.json());
+          return result.json();
+        }
+        return Promise.reject(await res.json());
+      }
       return res.json();
     });
   const cartReq = useQuery({
     queryKey: ["userCart", auth.userId],
     queryFn: () => fetchCart(),
-  });
-
-  const createCart = () =>
-    fetch(`/api/users/${auth.userId}/carts`, { method: "POST" }).then(
-      async (res) => {
-        if (!res.ok) return Promise.reject(await res.json());
-        return res.json();
-      },
-    );
-  const createCartReq = useMutation({
-    mutationKey: ["userCart", auth.userId],
-    mutationFn: () => createCart(),
+    enabled: auth.isAuthenticated,
   });
 
   const createCartItem = (ItemData: CartItemInputSchemaType) =>
-    fetch(
-      `/api/carts/${cartReq.data?.data.id || createCartReq.data?.data.id}/items`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ItemData),
+    fetch(`/api/carts/${cartReq.data?.data.id}/items`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    ).then(async (res) => {
+      body: JSON.stringify(ItemData),
+    }).then(async (res) => {
       if (!res.ok) return Promise.reject(await res.json());
       return res.json();
     });
   const createCartItemReq = useMutation({
-    mutationKey: [
-      "userCart",
-      cartReq.data?.data.id || createCartReq.data?.data.id,
-    ],
+    mutationKey: ["userCart", cartReq.data?.data.id],
     mutationFn: (ItemData: CartItemInputSchemaType) => createCartItem(ItemData),
   });
 
@@ -286,6 +278,10 @@ export default function ProductsPage() {
                               </span>
                               <Button
                                 size="sm"
+                                disabled={
+                                  cartReq.isFetching ||
+                                  createCartItemReq.isPending
+                                }
                                 onClick={() => {
                                   if (!auth.userId) {
                                     toast.error(
@@ -293,27 +289,20 @@ export default function ProductsPage() {
                                     );
                                     return;
                                   }
-                                  if (
-                                    cartReq.isError &&
-                                    !createCartReq.data
-                                  ) {
-                                    createCartReq.mutate();
-                                  } else {
-                                    createCartItemReq
-                                      .mutateAsync({
-                                        product_id: product.id,
-                                        quantity: 1,
-                                      })
-                                      .then(() => {
-                                        toast.success(
-                                          `${product.name} added to cart`,
-                                        );
-                                        productsReq.refetch();
-                                      })
-                                      .catch((err) => {
-                                        toast.error(err.message);
-                                      });
-                                  }
+                                  createCartItemReq
+                                    .mutateAsync({
+                                      product_id: product.id,
+                                      quantity: 1,
+                                    })
+                                    .then(() => {
+                                      toast.success(
+                                        `${product.name} added to cart`,
+                                      );
+                                      productsReq.refetch();
+                                    })
+                                    .catch((err) => {
+                                      toast.error(err.detail);
+                                    });
                                 }}
                               >
                                 Add to Cart
@@ -352,7 +341,7 @@ export default function ProductsPage() {
                                   ${parseFloat(product.price).toFixed(2)}
                                 </span>
                                 <Button
-                                  disabled={createCartItemReq.isPending}
+                                  disabled={cartReq.isFetching || createCartItemReq.isPending}
                                   size="sm"
                                   onClick={() => {
                                     if (!auth.userId) {
@@ -361,27 +350,20 @@ export default function ProductsPage() {
                                       );
                                       return;
                                     }
-                                    if (
-                                      cartReq.isError &&
-                                      !createCartReq.data
-                                    ) {
-                                      createCartReq.mutate();
-                                    } else {
-                                      createCartItemReq
-                                        .mutateAsync({
-                                          product_id: product.id,
-                                          quantity: 1,
-                                        })
-                                        .then(() => {
-                                          toast.success(
-                                            `${product.name} added to cart`,
-                                          );
-                                          productsReq.refetch();
-                                        })
-                                        .catch((err) => {
-                                          toast.error(err.message);
-                                        });
-                                    }
+                                    createCartItemReq
+                                      .mutateAsync({
+                                        product_id: product.id,
+                                        quantity: 1,
+                                      })
+                                      .then(() => {
+                                        toast.success(
+                                          `${product.name} added to cart`,
+                                        );
+                                        productsReq.refetch();
+                                      })
+                                      .catch((err) => {
+                                        toast.error(err.detail);
+                                      });
                                   }}
                                 >
                                   Add to Cart
@@ -392,12 +374,13 @@ export default function ProductsPage() {
                         ),
                       )}
                 </div>
-                {!productsReq.isFetching && productsReq.data.data?.length === 0 && (
-                  <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
-                    No products found. Try adjusting your filters or search
-                    query.
-                  </p>
-                )}
+                {!productsReq.isPending &&
+                  productsReq.data.data?.length === 0 && (
+                    <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
+                      No products found. Try adjusting your filters or search
+                      query.
+                    </p>
+                  )}
               </div>
               <div className="flex gap-10 mt-10 justify-center">
                 {productsReq.isFetching ? (
