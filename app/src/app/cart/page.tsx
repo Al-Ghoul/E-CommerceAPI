@@ -262,7 +262,8 @@ export default function CartPage() {
                         .mutateAsync(Number(cartReq.data?.data?.id))
                         .then(() => {
                           toast.success("Order placed successfully");
-                          router.push("/orders");
+                          cartItemsReq.refetch();
+                          router.replace("/orders");
                         })
                         .catch((err) => {
                           toast.error(err.message || err.detail);
