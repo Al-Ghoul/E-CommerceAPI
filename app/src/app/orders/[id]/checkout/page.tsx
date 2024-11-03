@@ -486,7 +486,8 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
                         <h3 className="font-medium">Payment Information:</h3>
                         <p>
                           Card ending in
-                          {getPaymentValues().card_number.toString().slice(-4)}
+                          {" " +
+                            getPaymentValues().card_number.toString().slice(-4)}
                         </p>
                         <p>{getPaymentValues().card_holder}</p>
                       </div>
