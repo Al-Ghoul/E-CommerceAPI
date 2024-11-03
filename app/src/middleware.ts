@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
   } catch {
     if (req.nextUrl.pathname === "/cart") {
       return NextResponse.redirect(new URL("/?error=AuthRequired", req.url));
-    } else if (req.nextUrl.pathname === "/orders") {
+    } else if (req.nextUrl.pathname.includes("orders")) {
       return NextResponse.redirect(new URL("/?error=AuthRequired", req.url));
     }
 
