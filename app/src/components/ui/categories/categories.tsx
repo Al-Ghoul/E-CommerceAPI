@@ -93,10 +93,15 @@ export function Categories() {
                 </>
               )}
             </div>
+            {!isPending && data.data?.length === 0 && (
+              <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
+                No Categories found.
+              </p>
+            )}
             <div className="flex gap-10 mt-10 justify-center">
               {isFetching ? (
                 <LoadingSpinner />
-              ) : (
+              ) : data.data?.length > 0 ? (
                 <>
                   <div className="text-center">
                     <Button
@@ -136,7 +141,7 @@ export function Categories() {
                     </Button>
                   </div>
                 </>
-              )}
+              ) : null}
             </div>
           </div>
         </>
