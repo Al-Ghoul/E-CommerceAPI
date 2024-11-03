@@ -1,27 +1,23 @@
 import * as jose from "jose";
 import { db } from "@/db";
+import { type NextRequest } from "next/server";
+import { VerifyAccessToken } from "@/utils";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
-    const accessToken = req.headers.get("authorization")?.split(" ")[1];
-    const tokenData = await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
+    const accessToken =
+      req.headers.get("authorization")?.split(" ")[1] ||
+      req.cookies.get("access_token")?.value;
+    const tokenData = await VerifyAccessToken(accessToken!);
 
     /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
     const selectedOrder = await db
       .selectFrom("order")
-      .selectAll()
+      .select(["id"])
       .where("id", "=", params.id)
       .where("user_id", "=", user_id)
       .executeTakeFirst();
@@ -42,7 +38,15 @@ export async function GET(
 
     const orderItems = await db
       .selectFrom("order_item")
-      .selectAll()
+      .innerJoin("product", "order_item.product_id", "product.id")
+      .select([
+        "product.name as name",
+        "order_item.id as id",
+        "order_item.quantity as quantity",
+        "order_item.price_at_purchase as price_at_purchase",
+        "order_item.created_at as created_at",
+        "order_item.updated_at as updated_at",
+      ])
       .where("order_id", "=", selectedOrder.id)
       .execute();
 
