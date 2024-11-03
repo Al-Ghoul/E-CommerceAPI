@@ -42,4 +42,8 @@ declare global {
     quantity: number;
     price_at_purchase: float;
   }
+
+  interface Error {
+    detail: string;
+  }
 }
