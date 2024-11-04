@@ -2,20 +2,21 @@ import { z } from "zod";
 import { db } from "@/db";
 import { GenerateAccessToken, GenerateRefreshToken } from "@/utils";
 import * as jose from "jose";
+import { type NextRequest } from "next/server";
+import { cookies } from "next/headers";
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const jsonInput = await request.json();
+    const jsonInput = await req.json();
+    const refreshToken = req.cookies.get("refresh_token")?.value;
     const validatedInput = RefreshInputSchema.safeParse(jsonInput);
 
-    if (!validatedInput.success) {
-      const { errors } = validatedInput.error;
-
+    if (!refreshToken && !validatedInput.success) {
       return new Response(
         JSON.stringify({
           status: "error",
           statusCode: 400,
-          errors,
+          errors: validatedInput.error.errors,
           detail: "Please make sure all fields are filled out correctly",
         }),
         {
@@ -28,7 +29,8 @@ export async function POST(request: Request) {
       const input = validatedInput.data;
 
       await jose.jwtVerify(
-        input.refresh_token,
+        /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
+        refreshToken || input?.refresh_token!,
         new TextEncoder().encode(process.env.TOKEN_SECRET),
         {
           typ: "refresh",
@@ -39,7 +41,8 @@ export async function POST(request: Request) {
 
       const token = await db
         .updateTable("token")
-        .where("token.token", "=", input.refresh_token)
+        /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
+        .where("token.token", "=", refreshToken || input?.refresh_token!)
         .where("token.status", "=", "valid")
         .where("token.type", "=", "refresh")
         .set({ status: "invalid", updated_at: new Date() })
@@ -84,6 +87,22 @@ export async function POST(request: Request) {
         })
         .executeTakeFirst();
 
+      cookies().set("access_token", access_token, {
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        secure: process.env.NODE_ENV === "production",
+        httpOnly: true,
+        sameSite: "strict",
+        path: "/",
+      });
+
+      cookies().set("refresh_token", refresh_token, {
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        secure: process.env.NODE_ENV === "production",
+        httpOnly: true,
+        sameSite: "strict",
+        path: "/",
+      });
+
       return new Response(
         JSON.stringify({
           status: "success",
@@ -108,7 +127,7 @@ export async function POST(request: Request) {
           },
         );
       }
-      
+
       return new Response(
         JSON.stringify({
           status: "error",
@@ -120,7 +139,7 @@ export async function POST(request: Request) {
         },
       );
     }
-  } catch  {
+  } catch {
     return new Response(
       JSON.stringify({
         status: "error",
