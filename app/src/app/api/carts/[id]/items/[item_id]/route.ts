@@ -12,9 +12,8 @@ export async function PATCH(
     const accessToken =
       req.headers.get("authorization")?.split(" ")[1] ||
       req.cookies.get("access_token")?.value;
-
     const jsonInput = await req.json();
-    const tokenData = await VerifyAccessToken(accessToken!);
+    const tokenData = await VerifyAccessToken(accessToken);
     
     const validatedInput = CartItemPatchInputSchema.safeParse(jsonInput);
     if (!validatedInput.success) {
@@ -196,8 +195,7 @@ export async function DELETE(
     const accessToken =
       req.headers.get("authorization")?.split(" ")[1] ||
       req.cookies.get("access_token")?.value;
-
-    const tokenData = await VerifyAccessToken(accessToken!);
+    const tokenData = await VerifyAccessToken(accessToken);
 
     /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
