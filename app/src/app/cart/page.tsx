@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Cart } from "kysely-codegen";
+import { fetchWithAuth } from "@/utils";
 
 interface CartItemInputType {
   itemId: number;
@@ -25,63 +26,45 @@ export default function CartPage() {
   const [total, setTotal] = useState(0);
   const router = useRouter();
 
-  const fetchCart = () =>
-    fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const cartReq = useQuery<{ data: Cart }, Error>({
     queryKey: ["userCart", auth.userId],
-    queryFn: () => fetchCart(),
+    queryFn: () => fetchWithAuth(`/api/users/${auth.userId}/carts`),
+    enabled: !!auth.userId,
   });
 
-  const fetchCartItems = () =>
-    fetch(`/api/carts/${cartReq.data?.data?.id}/items`).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const cartItemsReq = useQuery({
     queryKey: ["cartItems"],
-    queryFn: () => fetchCartItems(),
-    enabled: !!cartReq.data,
+    queryFn: () => fetchWithAuth(`/api/carts/${cartReq.data?.data?.id}/items`),
+    enabled: !!cartReq.data?.data?.id,
   });
 
-  const updateCartItem = (input: CartItemInputType) =>
-    fetch(`/api/carts/${cartReq.data?.data?.id}/items/${input.itemId}`, {
-      method: "PATCH",
-      body: JSON.stringify({ quantity: input.quantity }),
-    }).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const updateCartItemReq = useMutation({
     mutationKey: ["cartItem"],
-    mutationFn: (input: CartItemInputType) => updateCartItem(input),
+    mutationFn: (input: CartItemInputType) =>
+      fetchWithAuth(
+        `/api/carts/${cartReq.data?.data?.id}/items/${input.itemId}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ quantity: input.quantity }),
+        },
+      ),
   });
 
-  const deleteCartItem = (itemId: number) =>
-    fetch(`/api/carts/${cartReq.data?.data?.id}/items/${itemId}`, {
-      method: "DELETE",
-    }).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const deleteCartItemReq = useMutation({
     mutationKey: ["cartItem"],
-    mutationFn: (itemId: number) => deleteCartItem(itemId),
+    mutationFn: (itemId: number) =>
+      fetchWithAuth(`/api/carts/${cartReq.data?.data?.id}/items/${itemId}`, {
+        method: "DELETE",
+      }),
   });
 
-  const createOrder = (cart_id: number) =>
-    fetch(`/api/users/${auth.userId}/orders`, {
-      method: "POST",
-      body: JSON.stringify({ cart_id }),
-    }).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const createOrderReq = useMutation({
     mutationKey: ["userOrder", auth.userId],
-    mutationFn: (cart_id: number) => createOrder(cart_id),
+    mutationFn: (cart_id: number) =>
+      fetchWithAuth(`/api/users/${auth.userId}/orders`, {
+        method: "POST",
+        body: JSON.stringify({ cart_id }),
+      }),
   });
 
   useEffect(() => {
@@ -115,7 +98,7 @@ export default function CartPage() {
           <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
           {cartReq.isError && cartReq.error.statusCode === 404 ? (
             <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
-              No carts found.
+              No active cart found.
             </p>
           ) : cartItemsReq.isError || cartReq.isError ? (
             <div className="text-red-500 text-center">

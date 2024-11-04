@@ -15,22 +15,21 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { AuthContext } from "@/lib/contexts";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { fetchWithAuth } from "@/utils";
 
 export default function OrderListPage() {
   const auth = useContext(AuthContext);
   const limitBy = 12;
   const [offset, setOffset] = useState(0);
-  const fetchOrders = (offset: number) =>
-    fetch(
-      `/api/users/${auth.userId}/orders/?limit=${limitBy}&offset=${offset}`,
-    ).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
+
   const getOrdersReq = useQuery({
     queryKey: ["orders", offset],
-    queryFn: () => fetchOrders(offset),
+    queryFn: () =>
+      fetchWithAuth(
+        `/api/users/${auth.userId}/orders/?limit=${limitBy}&offset=${offset}`,
+      ),
     placeholderData: keepPreviousData,
+    enabled: !!auth.userId,
   });
 
   const statusColors = {

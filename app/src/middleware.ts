@@ -10,9 +10,20 @@ export async function middleware(req: NextRequest) {
     await VerifyAccessToken(accessToken);
   } catch {
     if (req.nextUrl.pathname === "/cart") {
-      return NextResponse.redirect(new URL("/?error=AuthRequired", req.url));
+      return NextResponse.redirect(
+        new URL(`/?error=AuthRequired&next=${req.nextUrl.pathname}`, req.url),
+      );
     } else if (req.nextUrl.pathname.includes("orders")) {
-      return NextResponse.redirect(new URL("/?error=AuthRequired", req.url));
+      return NextResponse.redirect(
+        new URL(`/?error=AuthRequired&next=${req.nextUrl.pathname}`, req.url),
+      );
+    } else if (req.nextUrl.pathname.endsWith("/logout")) {
+      const res = NextResponse.redirect(
+        new URL(`/?error=AuthRequired&next=/`, req.url),
+      );
+      res.cookies.delete("access_token");
+      res.cookies.delete("refresh_token");
+      return res;
     }
 
     return new NextResponse(
@@ -20,7 +31,7 @@ export async function middleware(req: NextRequest) {
         status: "error",
         statusCode: 401,
         message: "Can not access this resource",
-        detail: "Please login",
+        detail: "Invalid Token",
       }),
       { status: 401 },
     );
@@ -31,6 +42,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/auth/logout",
     "/cart",
     "/orders/:path*",
     "/api/carts/:path*",

@@ -28,6 +28,7 @@ import Image from "next/image";
 import { AuthContext } from "@/lib/contexts";
 import toast from "react-hot-toast";
 import { CartItemInputSchemaType } from "@/zodTypes";
+import { fetchWithAuth } from "@/utils";
 
 export default function ProductsPage({ params }: { params: { id: string } }) {
   const [selectedSubcategory, setSelectedSubcategory] = useState(-1);
@@ -95,40 +96,22 @@ export default function ProductsPage({ params }: { params: { id: string } }) {
     enabled: searchQuery.length > 0,
   });
 
-  const fetchCart = () =>
-    fetch(`/api/users/${auth.userId}/carts`).then(async (res) => {
-      if (!res.ok) {
-        if (res.status === 404) {
-          const result = await fetch(`/api/users/${auth.userId}/carts`, {
-            method: "POST",
-          });
-          if (!result.ok) return Promise.reject(await result.json());
-          return result.json();
-        }
-        return Promise.reject(await res.json());
-      }
-      return res.json();
-    });
   const cartReq = useQuery({
     queryKey: ["userCart", auth.userId],
-    queryFn: () => fetchCart(),
-    enabled: auth.isAuthenticated,
+    queryFn: () => fetchWithAuth(`/api/users/${auth.userId}/carts`),
+    enabled: !!auth.userId,
   });
 
-  const createCartItem = (ItemData: CartItemInputSchemaType) =>
-    fetch(`/api/carts/${cartReq.data?.data.id}/items`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(ItemData),
-    }).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const createCartItemReq = useMutation({
     mutationKey: ["userCart", cartReq.data?.data.id],
-    mutationFn: (ItemData: CartItemInputSchemaType) => createCartItem(ItemData),
+    mutationFn: (ItemData: CartItemInputSchemaType) =>
+      fetchWithAuth(`/api/carts/${cartReq.data?.data.id}/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ItemData),
+      }),
   });
 
   return (
