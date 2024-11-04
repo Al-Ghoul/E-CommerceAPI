@@ -86,10 +86,16 @@ export const ShippingAddressInputSchema = z.object({
   city: z.string(),
   country: z.string(),
   postal_code: z.string(),
-  payment_method: z.enum(["cod", "paypal", "credit_card"]),
 });
 
 export type ShippingAddressInputSchemaType = z.infer<typeof ShippingAddressInputSchema>;
+
+export const PaymentInputSchema = z.object({
+  amount: z.number(),
+  payment_method: z.enum(["cod", "paypal", "credit_card"]),
+});
+
+export type PaymentInputSchemaType = z.infer<typeof PaymentInputSchema>;
 
 export const CreditCardInputSchema = z.object({
   card_number: z.string(),
