@@ -3,25 +3,20 @@ import { db } from "@/db";
 import { DatabaseError } from "pg";
 import { type NextRequest } from "next/server";
 import * as jose from "jose";
+import { VerifyAccessToken } from "@/utils";
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } },
 ) {
   try {
     const jsonInput = await req.json();
     const validatedInput = ProductsInputSchema.safeParse(jsonInput);
-    const accessToken = req.headers.get("authorization")?.split(" ")[1];
+    const accessToken =
+      req.headers.get("authorization")?.split(" ")[1] ||
+      req.cookies.get("access_token")?.value;
 
-    await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
+    await VerifyAccessToken(accessToken);
 
     if (!validatedInput.success) {
       return new Response(
