@@ -30,7 +30,7 @@ export default function CartPage() {
       if (!res.ok) return Promise.reject(await res.json());
       return res.json();
     });
-  const cartReq = useQuery<{data : Cart}, Error>({
+  const cartReq = useQuery<{ data: Cart }, Error>({
     queryKey: ["userCart", auth.userId],
     queryFn: () => fetchCart(),
   });
@@ -113,7 +113,11 @@ export default function CartPage() {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
-          {cartItemsReq.isError || cartReq.isError ? (
+          {cartReq.isError && cartReq.error.statusCode === 404 ? (
+            <p className="text-center mt-8 text-lg text-gray-500 dark:text-gray-400">
+              No carts found.
+            </p>
+          ) : cartItemsReq.isError || cartReq.isError ? (
             <div className="text-red-500 text-center">
               <p>
                 Error:
@@ -126,8 +130,6 @@ export default function CartPage() {
             </div>
           ) : cartItemsReq.isPending ? (
             <LoadingSpinner />
-          ) : cartItemsReq.data?.data.length === 0 ? (
-            <p className="text-gray-500">Your cart is empty.</p>
           ) : (
             <div className="grid gap-8 md:grid-cols-3">
               <div className="md:col-span-2">
