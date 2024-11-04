@@ -20,11 +20,57 @@ export async function GenerateRefreshToken(userId: BigInt) {
     .setIssuer(process.env.TOKEN_ISSUER!)
     .setAudience(process.env.TOKEN_ISSUER!)
     .setIssuedAt()
-    .setExpirationTime("5d")
+    .setExpirationTime("7d")
     .sign(new TextEncoder().encode(process.env.TOKEN_SECRET!));
 }
 
-
 export async function VerifyAccessToken(token: string | undefined) {
-  return await jose.jwtVerify(token!, new TextEncoder().encode(process.env.TOKEN_SECRET!));
+  return await jose.jwtVerify(
+    token!,
+    new TextEncoder().encode(process.env.TOKEN_SECRET!),
+  );
+}
+
+export async function fetchWithAuth(url: string, options = {}) {
+  const fetchOptions = {
+    ...options,
+  };
+
+  let response = await fetch(url, fetchOptions);
+  if (response.status === 401) {
+    const data = await response.json();
+    if (
+      data?.detail === "Invalid Token" ||
+      data?.message === "Invalid or expired access token"
+    ) {
+      const refreshResponse = await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (refreshResponse.ok) {
+        response = await fetch(url, fetchOptions);
+        return response.json();
+      } else {
+        // Handle refresh failure (e.g., logout user)
+        window.location.href = "/auth/logout";
+      }
+    }
+  }
+
+  if (!response.ok) {
+    if (response.status === 404 && url.endsWith("/carts")) {
+      response = await fetch(url, {
+        method: "POST",
+      });
+    } else {
+      return Promise.reject(await response.json());
+    }
+  }
+
+  return response.json();
 }

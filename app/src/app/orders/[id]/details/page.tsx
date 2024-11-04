@@ -13,58 +13,27 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { fetchWithAuth } from "@/utils";
 
 export default function OrderDetails({ params }: { params: { id: string } }) {
-  const router = useRouter();
-
-  const fetchOrder = () =>
-    fetch(`/api/orders/${params.id}`).then(async (res) => {
-      if (!res.ok) {
-        if (res.status === 404) {
-          router.push("/404");
-        }
-        return Promise.reject(await res.json());
-      }
-      return res.json();
-    });
   const getOrderReq = useQuery({
     queryKey: ["order", params.id],
-    queryFn: () => fetchOrder(),
+    queryFn: () => fetchWithAuth(`/api/orders/${params.id}`),
   });
 
-  const fetchOrderPaymentInfo = () =>
-    fetch(`/api/orders/${params.id}/payment`).then(async (res) => {
-      if (!res.ok) {
-        return Promise.reject(await res.json());
-      }
-      return res.json();
-    });
   const getOrderPaymentInfoReq = useQuery({
     queryKey: ["orderPaymentInfo", params.id],
-    queryFn: () => fetchOrderPaymentInfo(),
+    queryFn: () => fetchWithAuth(`/api/orders/${params.id}/payment`),
   });
 
-  const fetchOrderShippingInfo = () =>
-    fetch(`/api/orders/${params.id}/shipping`).then(async (res) => {
-      if (!res.ok) {
-        return Promise.reject(await res.json());
-      }
-      return res.json();
-    });
   const getOrderShippingInfoReq = useQuery({
     queryKey: ["orderShippingInfo", params.id],
-    queryFn: () => fetchOrderShippingInfo(),
+    queryFn: () => fetchWithAuth(`/api/orders/${params.id}/shipping`),
   });
 
-  const fetchOrderItems = () =>
-    fetch(`/api/orders/${params.id}/items`).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const getOrderItemsReq = useQuery({
     queryKey: ["orderItems", params.id],
-    queryFn: () => fetchOrderItems(),
+    queryFn: () => fetchWithAuth(`/api/orders/${params.id}/items`),
     enabled: getOrderReq.isSuccess,
   });
 

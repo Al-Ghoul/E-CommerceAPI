@@ -1,3 +1,4 @@
+"use client";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
@@ -10,7 +11,6 @@ import {
 } from "@/zodTypes";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
 export function UserAuthModal({
@@ -23,15 +23,37 @@ export function UserAuthModal({
   const [activeTab, setActiveTab] = useState("register-tab");
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const next = searchParams.get("next");
 
   useEffect(() => {
     if (error === "AuthRequired") {
-      setActiveTab("login-tab");
-      new Promise((resolve) => setTimeout(resolve, 500)).then(() =>
-        toast.error("Please login to continue"),
-      );
+      fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      })
+        .then((res) => {
+          if (res.ok) {
+            if (next) {
+              setIsOpenFN(false);
+              window.location.href = next;
+            } else {
+              window.location.href = "/";
+            }
+          } else {
+            setActiveTab("login-tab");
+            toast.error("Session has ended, please re-login.");
+          }
+        })
+        .catch(() => {
+          setActiveTab("login-tab");
+          toast.error("Please login to continue");
+        });
     }
-  }, [error]);
+  }, [error, next, setIsOpenFN]);
 
   return (
     <div
@@ -276,10 +298,9 @@ function LoginInput({
     },
     resolver: zodResolver(RegisterInputSchema),
   });
-  const router = useRouter();
-  // const pathSegments = usePathname().split("/");
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const next = searchParams.get("next");
 
   const mutation = useMutation({
     mutationFn: async (data: LoginInputClientSchemaType) => {
@@ -294,13 +315,17 @@ function LoginInput({
 
       return response.json();
     },
-    onSuccess: (data) => {
-      toast.success(data.message);
+    onSuccess: () => {
+      toast.success("Logged in successfully");
       setIsOpenFN(false);
       if (error === "AuthRequired") {
-        router.replace("/");
+        if (next) {
+          window.location.href = next;
+        } else {
+          window.location.href = "/";
+        }
       }
-      router.refresh();
+      window.location.href = "/";
     },
     onError: (error) => {
       if ("data" in error) {

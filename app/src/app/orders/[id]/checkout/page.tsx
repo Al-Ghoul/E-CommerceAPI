@@ -18,6 +18,7 @@ import {
   ShippingAddressInputSchemaType,
 } from "@/zodTypes";
 import toast from "react-hot-toast";
+import { fetchWithAuth } from "@/utils";
 
 const steps = ["Shipping", "Payment", "Review"];
 
@@ -25,29 +26,14 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
   const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
 
-  const fetchOrder = () =>
-    fetch(`/api/orders/${params.id}`).then(async (res) => {
-      if (!res.ok) {
-        if (res.status === 404) {
-          router.push("/404");
-        }
-        return Promise.reject(await res.json());
-      }
-      return res.json();
-    });
   const getOrderReq = useQuery({
     queryKey: ["order", params.id],
-    queryFn: () => fetchOrder(),
+    queryFn: () => fetchWithAuth(`/api/orders/${params.id}`),
   });
 
-  const fetchOrderItems = () =>
-    fetch(`/api/orders/${params.id}/items`).then(async (res) => {
-      if (!res.ok) return Promise.reject(await res.json());
-      return res.json();
-    });
   const getOrderItemsReq = useQuery({
     queryKey: ["orderItems", params.id],
-    queryFn: () => fetchOrderItems(),
+    queryFn: () => fetchWithAuth(`/api/orders/${params.id}/items`),
     enabled: getOrderReq.isSuccess,
   });
 
@@ -84,18 +70,11 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
   });
 
   const createShippingReq = useMutation({
-    mutationFn: async (data: ShippingAddressInputSchemaType) => {
-      const response = await fetch(`/api/orders/${params.id}/shipping`, {
+    mutationFn: async (data: ShippingAddressInputSchemaType) =>
+      fetchWithAuth(`/api/orders/${params.id}/shipping`, {
         method: "POST",
         body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        return Promise.reject(await response.json());
-      }
-
-      return response.json();
-    },
+      }),
     onError: (error) => {
       if ("data" in error) {
         Object.entries(error.data as { [key: string]: Array<string> }).forEach(
@@ -113,18 +92,11 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
   const createPaymentReq = useMutation({
     mutationFn: async (
       data: PaymentInputSchemaType & CreditCardInputSchemaType,
-    ) => {
-      const response = await fetch(`/api/orders/${params.id}/payment`, {
+    ) =>
+      fetchWithAuth(`/api/orders/${params.id}/payment`, {
         method: "POST",
         body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        return Promise.reject(await response.json());
-      }
-
-      return response.json();
-    },
+      }),
     onError: (error) => {
       if ("data" in error) {
         Object.entries(error.data as { [key: string]: Array<string> }).forEach(
