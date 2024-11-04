@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreditCardInputSchema,
   CreditCardInputSchemaType,
+  PaymentInputSchemaType,
   ShippingAddressInputSchema,
   ShippingAddressInputSchemaType,
 } from "@/zodTypes";
@@ -63,7 +64,6 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
       city: "Al-Arish",
       country: "Egypt",
       postal_code: "45111",
-      payment_method: "credit_card",
     },
     resolver: zodResolver(ShippingAddressInputSchema),
   });
@@ -83,9 +83,36 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
     resolver: zodResolver(CreditCardInputSchema),
   });
 
-  const mutation = useMutation({
+  const createShippingReq = useMutation({
+    mutationFn: async (data: ShippingAddressInputSchemaType) => {
+      const response = await fetch(`/api/orders/${params.id}/shipping`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        return Promise.reject(await response.json());
+      }
+
+      return response.json();
+    },
+    onError: (error) => {
+      if ("data" in error) {
+        Object.entries(error.data as { [key: string]: Array<string> }).forEach(
+          ([key, value]) => {
+            setShippingError(key as ShippingAddressInputSchemaType & "root", {
+              type: "custom",
+              message: value[0],
+            });
+          },
+        );
+      }
+    },
+  });
+
+  const createPaymentReq = useMutation({
     mutationFn: async (
-      data: ShippingAddressInputSchemaType & CreditCardInputSchemaType,
+      data: PaymentInputSchemaType & CreditCardInputSchemaType,
     ) => {
       const response = await fetch(`/api/orders/${params.id}/payment`, {
         method: "POST",
@@ -98,25 +125,16 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
 
       return response.json();
     },
-    onSuccess: (data) => {
-      toast.success(data.message);
-    },
     onError: (error) => {
       if ("data" in error) {
         Object.entries(error.data as { [key: string]: Array<string> }).forEach(
           ([key, value]) => {
-            setShippingError(key as ShippingAddressInputSchemaType & "root", {
-              type: "custom",
-              message: value[0],
-            });
             setPaymentError(key as CreditCardInputSchemaType & "root", {
               type: "custom",
               message: value[0],
             });
           },
         );
-      } else {
-        toast.error(error.message);
       }
     },
   });
@@ -124,12 +142,6 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
   const handleNextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handlePreviousStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -178,8 +190,18 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
               <div className="md:col-span-2">
                 {currentStep === 0 && (
                   <form
-                    onSubmit={handleSubmit(() => {
-                      handleNextStep();
+                    onSubmit={handleSubmit((data) => {
+                      createShippingReq
+                        .mutateAsync(data)
+                        .then(() => {
+                          toast.success(
+                            "Shipping address created successfully",
+                          );
+                          handleNextStep();
+                        })
+                        .catch((error) => {
+                          toast.error(error.detail);
+                        });
                     })}
                   >
                     <h2 className="text-xl font-semibold mb-4">
@@ -328,15 +350,33 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
                         ) : null}
                       </div>
                     </div>
-                    <Button type="submit" className="mt-6">
+                    <Button
+                      disabled={createShippingReq.isPending}
+                      type="submit"
+                      className="mt-6"
+                    >
                       Continue to Payment
                     </Button>
                   </form>
                 )}
                 {currentStep === 1 && (
                   <form
-                    onSubmit={handlePaymentSubmit(() => {
-                      handleNextStep();
+                    onSubmit={handlePaymentSubmit((data) => {
+                      createPaymentReq
+                        .mutateAsync({
+                          ...data,
+                          amount: parseFloat(
+                            getOrderReq.data?.data.total_amount,
+                          ),
+                          payment_method: "credit_card",
+                        })
+                        .then(() => {
+                          toast.success("Payment info added successfully");
+                          handleNextStep();
+                        })
+                        .catch((error) => {
+                          toast.error(error.detail);
+                        });
                     })}
                   >
                     <h2 className="text-xl font-semibold mb-4">
@@ -460,13 +500,11 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
                     </div>
                     <div className="flex justify-between mt-6">
                       <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handlePreviousStep}
+                        disabled={createPaymentReq.isPending}
+                        type="submit"
                       >
-                        Back
+                        Review Order
                       </Button>
-                      <Button type="submit">Review Order</Button>
                     </div>
                   </form>
                 )}
@@ -510,35 +548,11 @@ export default function CheckOutPage({ params }: { params: { id: string } }) {
                     </div>
                     <div className="flex justify-between mt-6">
                       <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handlePreviousStep}
-                      >
-                        Back
-                      </Button>
-                      <Button
                         onClick={() => {
-                          const shipping = getShippingValues();
-                          const payment = getPaymentValues();
-                          mutation
-                            .mutateAsync({ ...shipping, ...payment })
-                            .then(() => {
-                              toast.success("Order placed successfully");
-                            })
-                            .catch((err) => {
-                              toast.error(err.detail);
-                            });
+                          router.replace(`/orders/${params.id}/details`);
                         }}
-                        disabled={mutation.isPending}
                       >
-                        {mutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processing
-                          </>
-                        ) : (
-                          "Place Order"
-                        )}
+                        Place Order
                       </Button>
                     </div>
                   </div>

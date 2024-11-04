@@ -33,6 +33,30 @@ export default function OrderDetails({ params }: { params: { id: string } }) {
     queryFn: () => fetchOrder(),
   });
 
+  const fetchOrderPaymentInfo = () =>
+    fetch(`/api/orders/${params.id}/payment`).then(async (res) => {
+      if (!res.ok) {
+        return Promise.reject(await res.json());
+      }
+      return res.json();
+    });
+  const getOrderPaymentInfoReq = useQuery({
+    queryKey: ["orderPaymentInfo", params.id],
+    queryFn: () => fetchOrderPaymentInfo(),
+  });
+
+  const fetchOrderShippingInfo = () =>
+    fetch(`/api/orders/${params.id}/shipping`).then(async (res) => {
+      if (!res.ok) {
+        return Promise.reject(await res.json());
+      }
+      return res.json();
+    });
+  const getOrderShippingInfoReq = useQuery({
+    queryKey: ["orderShippingInfo", params.id],
+    queryFn: () => fetchOrderShippingInfo(),
+  });
+
   const fetchOrderItems = () =>
     fetch(`/api/orders/${params.id}/items`).then(async (res) => {
       if (!res.ok) return Promise.reject(await res.json());
@@ -95,7 +119,10 @@ export default function OrderDetails({ params }: { params: { id: string } }) {
                 <span>Order {getOrderReq.data.data.id}</span>
                 <Badge
                   className={
-                    statusColors[getOrderReq.data.data.fulfillment_status as keyof typeof statusColors]
+                    statusColors[
+                    getOrderReq.data.data
+                      .fulfillment_status as keyof typeof statusColors
+                    ]
                   }
                 >
                   {getOrderReq.data.data.fulfillment_status
@@ -134,40 +161,51 @@ export default function OrderDetails({ params }: { params: { id: string } }) {
                 </ul>
               </div>
               <Separator />
-              {getOrderReq.data.data.fulfillment_status !== "pending" &&
-                getOrderReq.data.data.fulfillment_status !== "canceled" &&
-                getOrderReq.data.data.payment_details && (
+              {getOrderReq.data.data?.fulfillment_status !== "pending" &&
+                getOrderReq.data.data?.fulfillment_status !== "canceled" &&
+                getOrderPaymentInfoReq.data?.data && (
                   <div>
                     <h2 className="text-lg font-semibold mb-2">
                       Payment Details
                     </h2>
                     <p>
-                      Method: {getOrderReq.data.data.payment_details.method}
+                      Method:
+                      {getOrderPaymentInfoReq.data.data.payment_method ===
+                        "credit_card"
+                        ? "Credit Card"
+                        : null}
                     </p>
                     <p>
-                      Last 4 digits:
-                      {getOrderReq.data.data.payment_details.last4}
+                      {getOrderPaymentInfoReq.data.data.payment_method ===
+                        "credit_card"
+                        ? "Last 4 digits: " +
+                        getOrderPaymentInfoReq.data.data.card_number
+                          .toString()
+                          .slice(-4)
+                        : null}
                     </p>
                     <p>
                       Amount: $
-                      {getOrderReq.data.data.payment_details.amount.toFixed(2)}
+                      {parseFloat(
+                        getOrderPaymentInfoReq.data.data.amount,
+                      ).toFixed(2)}
                     </p>
                   </div>
                 )}
-              {getOrderReq.data.data.fulfillment_status === "delivered" &&
-                getOrderReq.data.data.shipping_details && (
-                  <div>
-                    <h2 className="text-lg font-semibold mb-2">
-                      Shipping Details
-                    </h2>
-                    <p>{getOrderReq.data.data.shipping_details.address}</p>
-                    <p>
-                      {getOrderReq.data.data.shipping_details.city},
-                      {getOrderReq.data.data.shipping_details.country}
-                      {getOrderReq.data.data.shipping_details.postal_code}
-                    </p>
-                  </div>
-                )}
+              <Separator />
+              {getOrderShippingInfoReq.data?.data && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-2">
+                    Shipping Details
+                  </h2>
+                  <p>{getOrderShippingInfoReq.data.address}</p>
+                  <p>
+                    {`${getOrderShippingInfoReq.data.data.city},
+                    ${getOrderShippingInfoReq.data.data.country}
+                    ${getOrderShippingInfoReq.data.data.postal_code}`}
+                  </p>
+                </div>
+              )}
               {getOrderReq.data.data.fulfillment_status === "canceled" && (
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
