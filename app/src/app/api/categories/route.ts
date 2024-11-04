@@ -4,23 +4,18 @@ import { DatabaseError } from "pg";
 import { type NextRequest } from "next/server";
 import * as jose from "jose";
 import "@/globals";
+import { VerifyAccessToken } from "@/utils";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const accessToken = req.headers.get("authorization")?.split(" ")[1];
+    const accessToken =
+      req.headers.get("authorization")?.split(" ")[1] ||
+      req.cookies.get("access_token")?.value;
     const jsonInput = await req.json();
     const validatedInput = CategoriesInputSchema.safeParse(jsonInput);
 
-    await jose.jwtVerify(
-      accessToken!,
-      new TextEncoder().encode(process.env.TOKEN_SECRET),
-      {
-        typ: "access",
-        issuer: process.env.TOKEN_ISSUER,
-        audience: process.env.TOKEN_ISSUER,
-      },
-    );
-
+    await VerifyAccessToken(accessToken);
+    
     if (!validatedInput.success) {
       return new Response(
         JSON.stringify({
