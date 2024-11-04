@@ -102,7 +102,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
   await db.schema
     .createType("fulfillment_status")
-    .asEnum(["pending", "shipped", "delivered", "canceled"])
+    .asEnum(["pending", "processing", "shipped", "delivered", "canceled"])
     .execute();
 
   await db.schema
