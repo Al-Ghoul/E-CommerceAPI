@@ -35,6 +35,7 @@ export default function OrderListPage() {
 
   const statusColors = {
     pending: "bg-yellow-200 text-yellow-800",
+    processing: "bg-yellow-200 text-yellow-800",
     shipped: "bg-blue-200 text-blue-800",
     delivered: "bg-green-200 text-green-800",
     canceled: "bg-red-200 text-red-800",
