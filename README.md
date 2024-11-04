@@ -60,6 +60,8 @@ cd app && npm run dev
 | /api/orders/{order_id}                        |                                 Gets an order.                                 | GET    |
 | /api/orders/{order_id}                        |                               Deletes an order.                                | DELETE |
 | /api/orders/{order_id}/items                  |                               Gets order items.                                | GET    |
+| /api/orders/{order_id}/payment                |                          Creates order payment info.                           | POST   |
+| /api/orders/{order_id}/shipping               |                          Creates order shipping info.                          | POST   |
 
 ## Technology stack
 
