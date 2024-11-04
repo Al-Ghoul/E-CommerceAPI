@@ -27,7 +27,7 @@ it("GET returns 200", async () => {
 
   const createdCategory = await db
     .insertInto("category")
-    .values({ name: "Clothing", description: "Clothing", icon: "clothing" })
+    .values({ name: "Clothing-test", description: "Clothing", icon: "clothing" })
     .returning("id")
     .executeTakeFirst();
 
