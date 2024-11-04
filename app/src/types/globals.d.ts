@@ -45,5 +45,7 @@ declare global {
 
   interface Error {
     detail: string;
+    message: string;
+    statusCode: number;
   }
 }
