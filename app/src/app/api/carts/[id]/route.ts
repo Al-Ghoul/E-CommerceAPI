@@ -12,10 +12,9 @@ export async function PATCH(
     const accessToken =
       req.headers.get("authorization")?.split(" ")[1] ||
       req.cookies.get("access_token")?.value;
-
     const jsonInput = await req.json();
     const validatedInput = CartPatchInputSchema.safeParse(jsonInput);
-    const tokenData = await VerifyAccessToken(accessToken!);
+    const tokenData = await VerifyAccessToken(accessToken);
 
     if (!validatedInput.success) {
       return new Response(

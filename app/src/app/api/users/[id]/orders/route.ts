@@ -15,7 +15,7 @@ export async function POST(
       req.cookies.get("access_token")?.value;
     const jsonInput = await req.json();
     const validatedInput = OrdersInputSchema.safeParse(jsonInput);
-    const tokenData = await VerifyAccessToken(accessToken!);
+    const tokenData = await VerifyAccessToken(accessToken);
 
     /* eslint @typescript-eslint/no-non-null-asserted-optional-chain: off */
     const user_id = tokenData.payload.sub?.split("|")[1]!;
@@ -164,7 +164,7 @@ export async function GET(
     const accessToken =
       req.headers.get("authorization")?.split(" ")[1] ||
       req.cookies.get("access_token")?.value;
-    const tokenData = await VerifyAccessToken(accessToken!);
+    const tokenData = await VerifyAccessToken(accessToken);
     const searchParams = req.nextUrl.searchParams;
     const limit = Number(searchParams.get("limit")) || 1;
     const offset = Number(searchParams.get("offset")) || 0;
