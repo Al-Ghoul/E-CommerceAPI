@@ -22,7 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { LoadingSpinner } from "@/components/ui/loadingspinner";
-import { Subcategory } from "kysely-codegen";
+import { Subcategory } from "@/db.d";
 import Link from "next/link";
 import Image from "next/image";
 import { AuthContext } from "@/lib/contexts";

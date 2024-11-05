@@ -1,4 +1,4 @@
-import { Product } from "kysely-codegen";
+import { Product } from "@/db.d";
 export { };
 
 declare global {

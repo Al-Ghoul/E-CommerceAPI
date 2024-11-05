@@ -21,7 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { LoadingSpinner } from "@/components/ui/loadingspinner";
-import { Category } from "kysely-codegen";
+import { Category } from "@/db.d";
 import Image from "next/image";
 import { useContext } from "react";
 import { AuthContext } from "@/lib/contexts";

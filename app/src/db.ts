@@ -1,5 +1,5 @@
 import { Kysely } from "kysely";
-import { DB } from "kysely-codegen";
+import { DB } from "@/db.d";
 import { NeonDialect } from "kysely-neon";
 
 export const db = new Kysely<DB>({

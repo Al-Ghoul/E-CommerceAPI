@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Icon from "@/components/ui/icon";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import React from "react";
-import { Category } from "kysely-codegen";
+import { Category } from "@/db.d";
 import dynamicIconImports from "lucide-react/dynamicIconImports";
 import { LoadingSpinner } from "../loadingspinner";
 import { Button } from "../button";

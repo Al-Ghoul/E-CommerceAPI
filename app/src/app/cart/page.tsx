@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Cart } from "kysely-codegen";
+import { Cart } from "@/db.d";
 import { fetchWithAuth } from "@/utils";
 
 interface CartItemInputType {

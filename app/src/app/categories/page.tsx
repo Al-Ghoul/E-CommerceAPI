@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { Categories } from "@/components/ui/categories/categories";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Category } from "kysely-codegen";
 import Link from "next/link";
+import { Category } from "@/db.d";
 
 export default function CategoriesPage() {
   const [query, setQuery] = useState("");
