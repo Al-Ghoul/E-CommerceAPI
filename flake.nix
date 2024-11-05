@@ -17,6 +17,11 @@
         devshell.url = "github:numtide/devshell";
       };
     };
+
+    makes = {
+      url = "github:Al-Ghoul/makes";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {
