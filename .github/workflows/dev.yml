@@ -2,7 +2,7 @@
 name: Makes CI
 on: [push, pull_request]
 jobs:
-  helloWorld:
+  __all__:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@f095bcc56b7c2baf48f3ac70d6d6782f4f553222
