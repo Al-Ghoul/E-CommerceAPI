@@ -23,6 +23,6 @@ in
       '';
 
       meta = {
-        description = "An E-Commerce RESTful & website built with NextJS.";
+        description = "A job that Lints & checks typescript code";
       };
     }
