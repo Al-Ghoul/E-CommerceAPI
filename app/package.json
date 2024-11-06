@@ -9,7 +9,7 @@
     "lint": "next lint",
     "kysely": "dotenv -e ./.env.development -- kysely",
     "kysely-codegen": "dotenv -e ./.env.development -- kysely-codegen",
-    "test": "jest --runInBand"
+    "test": "dotenv -e ./.env.development -- jest --runInBand"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

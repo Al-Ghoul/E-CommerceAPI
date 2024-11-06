@@ -9,7 +9,7 @@
     version = (builtins.fromJSON (builtins.readFile "${src}/package.json")).version;
 
     npmPackFlags = ["--ignore-scripts"];
-    npmDepsHash = "sha256-8LbIw3Ug4ez2/S684vy1F8hWUfKtvKULkwXBYSfdScE=";
+    npmDepsHash = "sha256-95pEfE8zJjdU+rkQ/JrFT0z8gWp6eIzctXS1Ct8yBmk=";
     env.OUTPUT_STANDALONE = true;
 
     postBuild = ''
