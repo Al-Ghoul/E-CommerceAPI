@@ -6,7 +6,7 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
     nixng = {
-      url = "github:nix-community/NixNG/master";
+      url = "github:Al-Ghoul/NixNG";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -15,6 +15,7 @@
       inputs = {
         nixpkgs.follows = "nixpkgs";
         devshell.url = "github:numtide/devshell";
+        arion.url = "github:hercules-ci/arion";
       };
     };
 
@@ -29,12 +30,17 @@
     extra-substituters = "https://devenv.cachix.org";
   };
 
-  outputs = {std, ...} @ inputs:
+  outputs = {
+    std,
+    nixpkgs,
+    ...
+  } @ inputs:
     std.growOn {
       inherit inputs;
       cellsFrom = ./nix;
       cellBlocks = with std.blockTypes; [
         (devshells "shells")
+        (arion "arion-compose")
       ];
     } {
       devShells = std.harvest inputs.self ["repo" "shells"];
