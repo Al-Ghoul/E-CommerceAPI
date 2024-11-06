@@ -32,7 +32,6 @@
 
   outputs = {
     std,
-    nixpkgs,
     ...
   } @ inputs:
     std.growOn {
